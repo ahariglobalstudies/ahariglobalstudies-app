@@ -152,10 +152,7 @@ export const COURSES: Course[] = [
         hours: '40 Hours',
       },
     ],
-    lectures: [
-      { id: 'lec-ca-1', title: 'Daily Live CA: आज के 25 सबसे महत्वपूर्ण राष्ट्रीय व अंतर्राष्ट्रीय मुद्दे', duration: '55m', isFreeDemo: true, date: 'Live Today 7:00 AM' },
-      { id: 'lec-ca-2', title: 'Special: पिछले 6 माह के सभी महत्वपूर्ण पुरस्कार, सूचकांक एवं सैन्य अभ्यास', duration: '1h 15m', isFreeDemo: true, date: 'Recorded' },
-    ],
+    lectures: [],
   },
   {
     id: 'course-mapping-special',
@@ -193,11 +190,7 @@ export const COURSES: Course[] = [
         hours: '30 Hours',
       },
     ],
-    lectures: [
-      { id: 'lec-map-1', chapterIndex: 0, title: 'World Geography: विश्व की प्रमुख जलसंधियां (Straits) 40 मिनट में याद', duration: '55m', isFreeDemo: true, date: 'Live Yesterday' },
-      { id: 'lec-map-1b', chapterIndex: 1, title: 'यूरोप एवं अमेरिका: जिब्राल्टर, पनामा व महान झीलें', duration: '1h 05m', isFreeDemo: false, date: 'Recorded' },
-      { id: 'lec-map-2', chapterIndex: 2, title: 'Indian Mapping: भारत के प्रमुख दर्रे और पहाड़ियां', duration: '1h 10m', isFreeDemo: true, date: 'Recorded' },
-    ],
+    lectures: [],
   },
   {
     id: 'course-history-special',
@@ -235,12 +228,7 @@ export const COURSES: Course[] = [
         hours: '55 Hours',
       },
     ],
-    lectures: [
-      { id: 'lec-his-1', chapterIndex: 0, title: 'सिंधु घाटी सभ्यता part 1 (हड़प्पा एवं नगर नियोजन)', duration: '1h 24m', isFreeDemo: true, date: '24 October 2026', videoUrl: 'https://youtu.be/RTXwE6g3Q4U?si=IpkySZpDoS4xvXuf' },
-      { id: 'lec-his-1b', chapterIndex: 0, title: 'वैदिक सभ्यता एवं 16 महाजनपद (मगध साम्राज्य का उदय)', duration: '1h 10m', isFreeDemo: true, date: 'Recorded' },
-      { id: 'lec-his-2', chapterIndex: 1, title: 'मध्यकालीन भारत: दिल्ली सल्तनत एवं मुगल साम्राज्य काल', duration: '1h 15m', isFreeDemo: false, date: 'Recorded' },
-      { id: 'lec-his-3', chapterIndex: 2, title: 'Modern History: 1857 की क्रांति और मंगल पांडे की शहादत', duration: '1h 18m', isFreeDemo: true, date: 'Recorded' },
-    ],
+    lectures: [],
   },
   {
     id: 'course-geography-special',
@@ -278,10 +266,7 @@ export const COURSES: Course[] = [
         hours: '30 Hours',
       },
     ],
-    lectures: [
-      { id: 'lec-geo-1', title: 'Physical Geography: प्लेट विवर्तनिकी एवं हिमालय का निर्माण', duration: '1h 10m', isFreeDemo: true, date: 'Recorded' },
-      { id: 'lec-geo-2', title: 'Indian Geography: भारतीय मानसून अल नीनो और ला नीना का प्रभाव', duration: '1h 05m', isFreeDemo: false, date: 'Live Tomorrow' },
-    ],
+    lectures: [],
   },
   {
     id: 'course-polity-special',
@@ -319,10 +304,7 @@ export const COURSES: Course[] = [
         hours: '30 Hours',
       },
     ],
-    lectures: [
-      { id: 'lec-pol-1', title: 'Polity: प्रस्तावना एवं संविधान का मूल ढांचा (Basic Structure)', duration: '1h 18m', isFreeDemo: true, date: 'Live Yesterday' },
-      { id: 'lec-pol-2', title: 'Polity: अनुच्छेद 12 से 35 मूल अधिकार आसान भाषा में', duration: '1h 22m', isFreeDemo: true, date: 'Recorded' },
-    ],
+    lectures: [],
   },
   {
     id: 'course-economy-special',
@@ -360,10 +342,7 @@ export const COURSES: Course[] = [
         hours: '25 Hours',
       },
     ],
-    lectures: [
-      { id: 'lec-eco-1', title: 'Economy: GDP, GNP और NNP में क्या अंतर है? शांति लाल अहारी स्पेशल', duration: '58m', isFreeDemo: true, date: 'VOD' },
-      { id: 'lec-eco-2', title: 'Economy: RBI रेपो रेट बढ़ाकर महंगाई कैसे काबू करता है?', duration: '52m', isFreeDemo: true, date: 'VOD' },
-    ],
+    lectures: [],
   },
   {
     id: 'course-mathematics-special',
@@ -401,10 +380,7 @@ export const COURSES: Course[] = [
         hours: '60 Hours',
       },
     ],
-    lectures: [
-      { id: 'lec-mat-1', title: 'Maths Demo: प्रतिशत के सवाल बिना फॉर्मूले सेकंडों में हल करें', duration: '1h 10m', isFreeDemo: true, date: 'Recorded' },
-      { id: 'lec-mat-2', title: 'Maths: रेलगाड़ी व खंभे वाले प्रश्न - जीरो पेन मेथड', duration: '1h 05m', isFreeDemo: true, date: 'Recorded' },
-    ],
+    lectures: [],
   },
   {
     id: 'course-reasoning-special',
@@ -442,10 +418,7 @@ export const COURSES: Course[] = [
         hours: '25 Hours',
       },
     ],
-    lectures: [
-      { id: 'lec-rea-1', title: 'Reasoning Demo: Syllogism बिना वेन आरेख 100-50 ट्रिक', duration: '1h 02m', isFreeDemo: true, date: 'Recorded' },
-      { id: 'lec-rea-2', title: 'Reasoning: कोडिंग-डिकोडिंग के 50 सबसे महत्वपूर्ण प्रश्न', duration: '55m', isFreeDemo: true, date: 'Recorded' },
-    ],
+    lectures: [],
   },
   {
     id: 'course-hindi-special',
@@ -483,10 +456,7 @@ export const COURSES: Course[] = [
         hours: '20 Hours',
       },
     ],
-    lectures: [
-      { id: 'lec-hin-1', title: 'Hindi Demo: संधि पहचानने की 2 सेकंड वाली जादुई ट्रिक', duration: '50m', isFreeDemo: true, date: 'VOD' },
-      { id: 'lec-hin-2', title: 'Hindi: समास पहचानने का अचूक फॉर्मूला', duration: '55m', isFreeDemo: true, date: 'VOD' },
-    ],
+    lectures: [],
   },
 ];
 
@@ -720,108 +690,8 @@ export const MOCK_TESTS: MockTest[] = [
   },
 ];
 
-export const PDF_NOTES: NoteItem[] = [
-  {
-    id: 'note-math-bhavesh-sir-mensuration',
-    title: 'Mathematics: Mensuration (क्षेत्रमिति) Handwritten Classroom Notes - Kagad Sir',
-    hindiTitle: 'क्षेत्रमिति (मेंसुरेशन) हस्तलिखित क्लासरूम नोट्स',
-    subject: 'MATHEMATICS',
-    medium: 'Hindi',
-    pages: 5,
-    fileSize: '1.4 MB',
-    downloadCount: 38200,
-    uploadDate: '24 Oct 2026',
-    fileUrl: '/assets/aistudio/Bhavesh_SIR_2e0e063d.pdf',
-    fileName: 'Kagad_Sir_Mathematics_Mensuration.pdf',
-    isUploadedByAdmin: true,
-    uploaderName: 'कागद सर',
-    faculty: 'कागद सर',
-    previewPages: [
-      'पेज 1: समतलीय आकृतियां - वृत्त की त्रिज्या, व्यास, परिधि (2πr), क्षेत्रफल (πr²), अर्धवृत्त एवं वलय (Ring) सूत्र।',
-      'पेज 2: त्रिज्यखण्ड (Sector) की चाप की लम्बाई (πrθ/180°), क्षेत्रफल (πr²θ/360°), लघु एवं दीर्घ वृत्तखण्ड।',
-      'पेज 3: वृत्त के अंतर्गत वर्ग एवं आयत, पहिए द्वारा चक्कर एवं दूरी सूत्र (दूरी = 2πr × चक्करों की संख्या)।',
-      'पेज 4: छायांकित भाग का क्षेत्रफल एवं संकेन्द्रीय वृत्त पर आधारित अभ्यास प्रश्न।',
-      'पेज 5: विगत वर्ष की प्रतियोगी परीक्षाओं के 9 महत्वपूर्ण प्रश्नों के सम्पूर्ण हस्तलिखित हल।',
-    ],
-    pdfContentSummary: 'भावेष सर (Bhavesh Sir - Faculty of Mathematics) द्वारा तैयार क्षेत्रमिति (Mensuration) के सम्पूर्ण क्लासरूम हस्तलिखित नोट्स। इसमें 2D समतलीय आकृतियों (वृत्त, अर्धवृत्त, त्रिज्यखण्ड, वृत्तखण्ड) के बेसिक सूत्र, ट्रिक्स एवं 9 अभ्यास प्रश्नों के चरण-दर-चरण हस्तलिखित हल शामिल हैं।',
-  },
-  {
-    id: 'note-history-handwritten',
-    title: 'Modern Indian History Class Handwritten Notes (1857-1947)',
-    hindiTitle: 'आधुनिक भारत का इतिहास हस्तलिखित क्लास नोट्स',
-    subject: 'HISTORY',
-    medium: 'Hindi',
-    pages: 142,
-    fileSize: '18.4 MB',
-    downloadCount: 94200,
-    uploadDate: 'Updated Yesterday',
-    uploaderName: 'शांति लाल अहारी सर',
-    faculty: 'शांति लाल अहारी सर',
-    previewPages: [
-      'पेज 1: 1857 की क्रांति के कारण, चर्बी वाले कारतूस की सच्चाई, मंगल पांडे की शहादत और प्रमुख केंद्र (झांसी, कानपुर, लखनऊ)।',
-      'पेज 2: ब्रिटिश आर्थिक नीतियां - दादाभाई नौरोजी का धन निष्कासन सिद्धांत (Drain of Wealth) और रैयतवाड़ी/महालवाड़ी व्यवस्था।',
-      'पेज 3: गांधीवादी युग - चंपारण (1917), अहमदाबाद मिल मजदूर, खेड़ा, असहयोग आंदोलन और दांडी मार्च का तुलनात्मक चार्ट।',
-    ],
-    pdfContentSummary: 'Official classroom handwritten notes transcribed from Shanti Lal Ahari Sir’s lectures. Covers European advent, Carnatic wars, 1857 uprising, tribal revolts, socio-religious reform movements, Indian National Congress sessions, revolutionary terrorism, and freedom struggle till Indian Independence Act 1947.',
-  },
-  {
-    id: 'note-polity-mindmap',
-    title: 'Indian Constitution Articles 1 to 395 Quick Revision Mindmap',
-    hindiTitle: 'भारतीय संविधान अनुच्छेद 1 से 395 तक त्वरित रिवीजन माइंडमैप',
-    subject: 'POLITY',
-    medium: 'Hindi',
-    pages: 86,
-    fileSize: '12.1 MB',
-    downloadCount: 135000,
-    uploadDate: '2 Days Ago',
-    uploaderName: 'शांति लाल अहारी सर',
-    faculty: 'शांति लाल अहारी सर',
-    previewPages: [
-      'भाग 1-3: भारत एवं उसके राज्यक्षेत्र, नागरिकता (अनु 5-11), मूल अधिकार (अनु 12-35) की शांति लाल अहारी सर ट्रिक।',
-      'भाग 4-4A: नीति निदेशक तत्व (DPSP) और 11 मूल कर्तव्य (स्वर्ण सिंह समिति)।',
-      'भाग 5: संघ सरकार - राष्ट्रपति (अनु 52-62), संसद, सर्वोच्च न्यायालय और नियंत्रक एवं महालेखापरीक्षक (CAG)।',
-    ],
-    pdfContentSummary: 'High-yield memory charts containing all 22 Parts, 12 Schedules, and crucial Constitutional Amendments with mnemonic memory keys.',
-  },
-  {
-    id: 'note-geography-atlas',
-    title: 'World & Indian Geography High-Resolution Atlas Notes',
-    hindiTitle: 'विश्व एवं भारतीय भूगोल मानचित्र एटलस नोट्स',
-    subject: 'MAPPING',
-    medium: 'Bilingual',
-    pages: 110,
-    fileSize: '24.8 MB',
-    downloadCount: 88400,
-    uploadDate: '5 Days Ago',
-    uploaderName: 'शांति लाल अहारी सर',
-    faculty: 'शांति लाल अहारी सर',
-    previewPages: [
-      'शीट 1: भारत की प्रमुख नदियां (सिंधु, गंगा, ब्रह्मपुत्र, प्रायद्वीपीय नदियां) उद्गम और सहायक नदियों का रंगीन मानचित्र।',
-      'शीट 2: विश्व के प्रमुख जलडमरूमध्य (Straits) - जिब्राल्टर, बॉस्फोरस, मलक्का, बेरिंग और स्वेज नहर की भौगोलिक स्थिति।',
-      'शीट 3: प्रमुख पर्वत श्रृंखलाएं और दर्रे (Passes) - काराकोरम, जोजिला, शिपकी ला, नाथु ला, पालघाट।',
-    ],
-    pdfContentSummary: 'Bilingual diagrammatic visual atlas with custom hand-drawn vector maps, tectonic plate boundaries, monsoonal wind patterns, soil distribution of India, and mineral belts.',
-  },
-  {
-    id: 'note-hindi-vyakaran',
-    title: 'Complete Samanya Hindi Vyakaran Class Notes & Formula Chart',
-    hindiTitle: 'सम्पूर्ण सामान्य हिंदी व्याकरण क्लास नोट्स एवं सूत्र चार्ट',
-    subject: 'HINDI',
-    medium: 'Hindi',
-    pages: 96,
-    fileSize: '14.5 MB',
-    downloadCount: 68000,
-    uploadDate: '3 Days Ago',
-    uploaderName: 'शांति लाल अहारी सर',
-    faculty: 'शांति लाल अहारी सर',
-    previewPages: [
-      'पेज 1: वर्णमाला - स्वर एवं व्यंजनों का वर्गीकरण, अघोष-सघोष, अल्पप्राण-महाप्राण।',
-      'पेज 2: संधि - स्वर संधि (दीर्घ, गुण, वृद्धि, यण, अयादि) पहचानने का 2 सेकंड वाला नियम।',
-      'पेज 3: समास - अव्ययीभाव, तत्पुरुष, कर्मधारय, द्विगु, द्वंद्व और बहुव्रीहि का तुलनात्मक चार्ट।',
-    ],
-    pdfContentSummary: 'Handwritten Hindi grammar revision notes curated for state competitive exams with 500+ solved practice MCQs.',
-  },
-];
+// PDF Notes & Handouts (Empty by default per user instruction; populated upon upload)
+export const PDF_NOTES: NoteItem[] = [];
 
 export const ORDER_HISTORY: OrderRecord[] = [
   {

@@ -214,9 +214,14 @@ export const NotesView: React.FC<NotesViewProps> = ({
                         {language === 'hi' ? note.hindiTitle || note.title : note.title}
                       </h4>
 
-                      {/* 2. Faculty / Teacher Name */}
-                      <div className="text-[11px] font-semibold text-slate-600 mt-0.5">
-                        {note.uploaderName || note.faculty || (language === 'hi' ? 'कागद सर' : 'Faculty')}
+                      {/* 2. Faculty / Teacher Name & Topic */}
+                      <div className="flex items-center gap-1.5 flex-wrap text-[11px] font-semibold text-slate-600 mt-0.5">
+                        <span>{note.uploaderName || note.faculty || (language === 'hi' ? 'कागद सर' : 'Faculty')}</span>
+                        {note.topicTitle && (
+                          <span className="text-[10px] bg-blue-50 text-blue-700 px-1.5 py-0.2 rounded font-medium border border-blue-100">
+                            {note.topicTitle}
+                          </span>
+                        )}
                       </div>
 
                       {/* 3. Pages, Size (MB), Date ONLY */}

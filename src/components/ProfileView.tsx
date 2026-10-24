@@ -15,6 +15,8 @@ import {
   FileText,
   CheckCircle2,
   Play,
+  Layers,
+  Video,
 } from 'lucide-react';
 import { COURSES, ORDER_HISTORY } from '../data/mockData';
 import { UserProfile, Course, OrderRecord } from '../types';
@@ -25,6 +27,7 @@ interface ProfileViewProps {
   onToggleLanguage: () => void;
   onOpenCourse: (course: Course) => void;
   onResumeLecture: (courseTitle: string, lectureTitle: string) => void;
+  onOpenAdmin?: () => void;
 }
 
 export const ProfileView: React.FC<ProfileViewProps> = ({
@@ -33,6 +36,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   onToggleLanguage,
   onOpenCourse,
   onResumeLecture,
+  onOpenAdmin,
 }) => {
   const [activeSection, setActiveSection] = useState<'batches' | 'orders' | 'help'>('batches');
   const [showInvoiceModal, setShowInvoiceModal] = useState<OrderRecord | null>(null);
@@ -98,6 +102,34 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         </div>
       </div>
 
+      {/* Admin Portal Card */}
+      {onOpenAdmin && (
+        <div className="bg-gradient-to-r from-[#0a2240] to-slate-900 rounded-2xl p-4 text-white flex items-center justify-between border border-amber-400/30 shadow-md">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-400/20 text-amber-400 border border-amber-400/40 flex items-center justify-center shrink-0">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="font-extrabold text-xs sm:text-sm text-white">
+                {language === 'hi' ? 'व्यवस्थापक पोर्टल (Admin Portal)' : 'Admin Control Panel'}
+              </h4>
+              <p className="text-[11px] text-blue-200">
+                {language === 'hi'
+                  ? 'नोट्स अपलोड एवं करंट अफेयर्स सीधा प्रकाशन'
+                  : 'Upload notes & publish current affairs'}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onOpenAdmin}
+            className="px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs flex items-center gap-1 active:scale-95 shadow-xs transition-all shrink-0"
+          >
+            <span>{language === 'hi' ? 'एडमिन लॉगिन' : 'Admin Login'}</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
       {/* 2. SECTION TABS (My Batches / Orders / Help Support) */}
       <div className="flex p-1 bg-slate-200/80 rounded-xl">
         <button
@@ -150,37 +182,60 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             {enrolledCourses.map((course) => (
               <div
                 key={course.id}
-                className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-xs space-y-3"
+                onClick={() => onOpenCourse(course)}
+                className="bg-white rounded-2xl p-4 border-2 border-indigo-200/90 hover:border-indigo-500 shadow-sm hover:shadow-md transition-all space-y-3 cursor-pointer group"
               >
                 <div className="flex items-start justify-between gap-3">
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
-                      ✓ ENROLLED & ACTIVE
-                    </span>
-                    <h4 className="font-bold text-xs sm:text-sm text-slate-900 leading-snug">
+                  <div className="space-y-1 flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                        <span>प्रवेश पूर्ण (ACTIVE)</span>
+                      </span>
+                      <span className="text-[10px] text-blue-700 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-md font-semibold">
+                        {course.category}
+                      </span>
+                    </div>
+
+                    <h4 className="font-bold text-xs sm:text-sm text-slate-900 leading-snug group-hover:text-indigo-900 transition-colors">
                       {language === 'hi' && course.hindiTitle ? course.hindiTitle : course.title}
                     </h4>
                     <p className="text-[11px] text-slate-500">{course.faculty}</p>
                   </div>
 
-                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#0a2240] flex items-center justify-center font-bold text-xs shrink-0">
-                    {course.category}
+                  <div className="w-10 h-10 rounded-xl bg-[#0a2240] text-amber-400 flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                    {course.category.slice(0, 3)}
+                  </div>
+                </div>
+
+                {/* 3 Sub-Tables Available Indicators */}
+                <div className="grid grid-cols-3 gap-1.5 py-1 text-center text-[10px]">
+                  <div className="bg-slate-50 border border-slate-200 rounded-lg p-1 text-slate-700 font-semibold flex items-center justify-center gap-1">
+                    <Video className="w-3 h-3 text-blue-600 shrink-0" />
+                    <span>1. वीडियो</span>
+                  </div>
+                  <div className="bg-slate-50 border border-slate-200 rounded-lg p-1 text-slate-700 font-semibold flex items-center justify-center gap-1">
+                    <FileText className="w-3 h-3 text-indigo-600 shrink-0" />
+                    <span>2. क्लास नोट्स</span>
+                  </div>
+                  <div className="bg-slate-50 border border-slate-200 rounded-lg p-1 text-slate-700 font-semibold flex items-center justify-center gap-1">
+                    <BookOpen className="w-3 h-3 text-emerald-600 shrink-0" />
+                    <span>3. पीडीएफ</span>
                   </div>
                 </div>
 
                 <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
-                  <span className="text-slate-400 text-[11px]">{course.validity}</span>
+                  <span className="text-slate-400 text-[11px]">वैधता: {course.validity}</span>
                   <button
-                    onClick={() =>
-                      onResumeLecture(
-                        course.title,
-                        course.lectures[0]?.title || 'Introduction & Lecture 01'
-                      )
-                    }
-                    className="px-3.5 py-1.5 rounded-xl bg-[#0a2240] text-white font-bold text-xs hover:bg-blue-900 transition-colors flex items-center gap-1.5 shadow-2xs"
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onOpenCourse(course);
+                    }}
+                    className="px-3.5 py-1.5 rounded-xl bg-[#0a2240] hover:bg-[#133560] active:scale-95 text-white font-bold text-xs transition-all flex items-center gap-1.5 shadow-xs"
                   >
-                    <Play className="w-3.5 h-3.5 fill-current" />
-                    <span>{language === 'hi' ? 'क्लास देखें' : 'Watch Class'}</span>
+                    <Layers className="w-3.5 h-3.5 text-amber-400" />
+                    <span>{language === 'hi' ? 'कोर्स कंटेंट खोलें (3 सब-टेबल)' : 'Open Course (3 Tabs)'}</span>
                   </button>
                 </div>
               </div>

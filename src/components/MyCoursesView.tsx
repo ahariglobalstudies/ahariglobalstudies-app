@@ -126,7 +126,7 @@ export const MyCoursesView: React.FC<MyCoursesViewProps> = ({
             return (
               <div
                 key={course.id}
-                className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-xs hover:border-slate-300 transition-all space-y-3"
+                className="bg-white rounded-2xl p-4 border-2 border-indigo-500 hover:border-indigo-600 shadow-md hover:shadow-lg transition-all space-y-3"
               >
                 {/* Course Header */}
                 <div className="flex items-start justify-between gap-3">
@@ -189,22 +189,14 @@ export const MyCoursesView: React.FC<MyCoursesViewProps> = ({
                   <span>{course.totalHours}</span>
                 </div>
 
-                {/* Actions: Resume lecture + View syllabus */}
-                <div className="grid grid-cols-2 gap-2 pt-1">
+                {/* Actions: Open Course Content (3 Sub-Tables) */}
+                <div className="pt-1">
                   <button
                     onClick={() => onOpenCourse(course)}
-                    className="py-2 px-3 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-semibold text-center transition-colors flex items-center justify-center gap-1"
+                    className="w-full py-2.5 px-3 rounded-xl bg-[#0a2240] hover:bg-[#133560] active:scale-95 text-white text-xs font-bold text-center transition-all shadow-xs flex items-center justify-center gap-2"
                   >
-                    <BookOpen className="w-3.5 h-3.5 text-slate-500" />
-                    <span>सिलेबस व नोट्स</span>
-                  </button>
-
-                  <button
-                    onClick={() => onResumeLecture(course.title, nextLec)}
-                    className="py-2 px-3 rounded-xl bg-[#0a2240] hover:bg-blue-900 active:scale-95 text-white text-xs font-bold text-center transition-all shadow-xs flex items-center justify-center gap-1"
-                  >
-                    <Play className="w-3.5 h-3.5 fill-current" />
-                    <span>क्लास देखें</span>
+                    <BookOpen className="w-4 h-4 text-amber-400" />
+                    <span>कोर्स कंटेंट खोलें (1. वीडियो • 2. क्लास नोट्स • 3. पीडीएफ)</span>
                   </button>
                 </div>
               </div>

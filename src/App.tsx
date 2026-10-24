@@ -19,14 +19,16 @@ import { TestRunnerModal } from './components/TestRunnerModal';
 import { PdfViewerModal } from './components/PdfViewerModal';
 import { EnrollModal } from './components/EnrollModal';
 import { SyllabusModal } from './components/SyllabusModal';
+import { AdminPortalModal } from './components/AdminPortalModal';
 import {
   COURSES,
   MOCK_TESTS,
   PDF_NOTES,
   INITIAL_USER,
 } from './data/mockData';
-import { TabType, Course, MockTest, NoteItem, UserProfile, ExamCategory, SheetClassRecord } from './types';
+import { TabType, Course, MockTest, NoteItem, UserProfile, ExamCategory, SheetClassRecord, CurrentAffairsArticle } from './types';
 import { fetchGoogleSheetClasses, FALLBACK_SHEET_CLASSES } from './services/sheetService';
+import { cmsStore } from './services/cmsStore';
 import { Smartphone, Monitor, CheckCircle2 } from 'lucide-react';
 
 export default function App() {
@@ -43,15 +45,128 @@ export default function App() {
   const [sheetClasses, setSheetClasses] = useState<SheetClassRecord[]>(FALLBACK_SHEET_CLASSES);
   const [isSheetLoading, setIsSheetLoading] = useState<boolean>(false);
 
-  // Notes state
-  const [allNotes] = useState<NoteItem[]>(() => {
+  // Persistent Custom Admin Notes
+  const [customNotes, setCustomNotes] = useState<NoteItem[]>(() => {
     try {
-      localStorage.removeItem('ags_custom_admin_notes');
+      const saved = localStorage.getItem('ags_custom_admin_notes');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      }
     } catch (e) {
       // ignore
     }
-    return PDF_NOTES;
+    return [];
   });
+
+  // Persistent Custom Admin Current Affairs Articles
+  const [customArticles, setCustomArticles] = useState<CurrentAffairsArticle[]>(() => {
+    try {
+      const saved = localStorage.getItem('ags_custom_ca_articles');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch (e) {
+      // ignore
+    }
+    return [];
+  });
+
+  const [cmsTrigger, setCmsTrigger] = useState(0);
+
+  // Formatted notes from relational cmsStore
+  const cmsNotesFormatted = React.useMemo<NoteItem[]>(() => {
+    try {
+      const dbNotes = cmsStore.getNotes();
+      return dbNotes.map((n) => ({
+        id: n.id,
+        title: n.title,
+        hindiTitle: n.title,
+        subject: n.title.includes('क्षेत्रमिति') || n.title.includes('मेंसुरेशन') ? 'MATHEMATICS' : 'HISTORY',
+        medium: 'Hindi' as const,
+        pages: 24,
+        fileSize: `${n.file_size_mb} MB`,
+        downloadCount: 1840,
+        uploadDate: '24 अक्टूबर 2026',
+        previewPages: ['पेज 1: अवधारणा एवं फॉर्मूला', 'पेज 2: परीक्षा प्रश्नोत्तरी'],
+        pdfContentSummary: `${n.title} - क्लासरूम में तैयार हस्तलिखित नोट्स।`,
+        fileUrl: n.file_url,
+        fileName: `${n.title}.pdf`,
+        isUploadedByAdmin: true,
+        uploaderName: 'कागद सर',
+        faculty: 'कागद सर',
+      }));
+    } catch {
+      return [];
+    }
+  }, [cmsTrigger]);
+
+  // Combined notes for all views
+  const allNotes: NoteItem[] = React.useMemo(() => {
+    // Unique by id or title
+    const seen = new Set<string>();
+    const combined: NoteItem[] = [];
+    for (const note of [...cmsNotesFormatted, ...customNotes, ...PDF_NOTES]) {
+      if (!seen.has(note.id) && !seen.has(note.title)) {
+        seen.add(note.id);
+        seen.add(note.title);
+        combined.push(note);
+      }
+    }
+    return combined;
+  }, [cmsNotesFormatted, customNotes]);
+
+  // Admin Portal Modal state
+  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
+
+  const handleUploadNote = (newNote: NoteItem) => {
+    setCustomNotes((prev) => {
+      const updated = [newNote, ...prev];
+      try {
+        localStorage.setItem('ags_custom_admin_notes', JSON.stringify(updated));
+      } catch (e) {
+        console.error('Failed to save custom note:', e);
+      }
+      return updated;
+    });
+  };
+
+  const handleDeleteNote = (noteId: string) => {
+    setCustomNotes((prev) => {
+      const updated = prev.filter((n) => n.id !== noteId);
+      try {
+        localStorage.setItem('ags_custom_admin_notes', JSON.stringify(updated));
+      } catch (e) {
+        console.error('Failed to update custom notes:', e);
+      }
+      return updated;
+    });
+  };
+
+  const handlePublishArticle = (newArticle: CurrentAffairsArticle) => {
+    setCustomArticles((prev) => {
+      const updated = [newArticle, ...prev];
+      try {
+        localStorage.setItem('ags_custom_ca_articles', JSON.stringify(updated));
+      } catch (e) {
+        console.error('Failed to save custom article:', e);
+      }
+      return updated;
+    });
+  };
+
+  const handleDeleteArticle = (articleId: string) => {
+    setCustomArticles((prev) => {
+      const updated = prev.filter((a) => a.id !== articleId);
+      try {
+        localStorage.setItem('ags_custom_ca_articles', JSON.stringify(updated));
+      } catch (e) {
+        console.error('Failed to update custom articles:', e);
+      }
+      return updated;
+    });
+  };
 
   // Modal States
   const [videoModal, setVideoModal] = useState<{
@@ -255,6 +370,7 @@ export default function App() {
           currentLanguage={language}
           onToggleLanguage={handleToggleLanguage}
           targetExam={user.targetExam}
+          onOpenAdmin={() => setIsAdminModalOpen(true)}
         />
 
         {/* Notice Board Ticker (Active on Home and visible) */}
@@ -275,6 +391,8 @@ export default function App() {
               onEnrollCourse={(course) => setEnrollModal({ isOpen: true, course })}
               onResumeLecture={handleResumeLecture}
               onSelectCategoryFilter={handleCategoryFromHome}
+              customArticles={customArticles}
+              enrolledCourseIds={user.enrolledCourseIds}
               onStartDailyQuiz={() => {
                 const quiz = MOCK_TESTS.find((t) => t.isDailyQuiz) || MOCK_TESTS[0];
                 handleStartTest(quiz);
@@ -330,6 +448,7 @@ export default function App() {
               onToggleLanguage={handleToggleLanguage}
               onOpenCourse={(course) => setSyllabusModal({ isOpen: true, course })}
               onResumeLecture={handleResumeLecture}
+              onOpenAdmin={() => setIsAdminModalOpen(true)}
             />
           )}
 
@@ -430,8 +549,19 @@ export default function App() {
           onOpenPdf={handleOpenPdf}
           onDownloadNote={handleDownloadNote}
           downloadedNoteIds={downloadedNoteIds}
+          allNotes={allNotes}
         />
       )}
+
+      {/* 6. Secure Admin Portal Modal */}
+      <AdminPortalModal
+        isOpen={isAdminModalOpen}
+        onClose={() => setIsAdminModalOpen(false)}
+        showToast={showToast}
+        onDataChanged={() => {
+          setCmsTrigger((v) => v + 1);
+        }}
+      />
     </div>
   );
 }

@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
-import { Bell, Search, Globe, X, Sparkles, AlertCircle } from 'lucide-react';
+import { Bell, Search, Globe, X, Sparkles, AlertCircle, Shield } from 'lucide-react';
 import { NOTICES } from '../data/mockData';
 
 interface HeaderProps {
   currentLanguage: 'hi' | 'en';
   onToggleLanguage: () => void;
   onOpenSearch?: () => void;
+  onOpenAdmin?: () => void;
   targetExam?: string;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   currentLanguage,
   onToggleLanguage,
-  targetExam = 'UPSC & SSC',
+  targetExam = 'विषयवार स्पेशल बैच',
+  onOpenAdmin,
 }) => {
   const [showNotificationDrawer, setShowNotificationDrawer] = useState(false);
   const [unreadCount, setUnreadCount] = useState(3);
@@ -57,6 +59,21 @@ export const Header: React.FC<HeaderProps> = ({
               <Globe className="w-3.5 h-3.5 text-amber-400" />
               <span>{currentLanguage === 'hi' ? 'हिंदी' : 'ENG'}</span>
             </button>
+
+            {/* Top-Right Corner: Login / Admin Portal Button */}
+            {onOpenAdmin && (
+              <button
+                onClick={onOpenAdmin}
+                className="min-h-[36px] px-3 py-1 text-xs font-bold rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 active:scale-95 transition-all flex items-center gap-1.5 shadow-sm border border-amber-300"
+                title="व्यवस्थापक / स्टाफ लॉगिन एवं CMS"
+                aria-label="Admin and Staff Login"
+              >
+                <Shield className="w-3.5 h-3.5 text-slate-950 fill-slate-950" />
+                <span className="whitespace-nowrap font-extrabold tracking-tight">
+                  {currentLanguage === 'hi' ? 'लॉगिन / एडमिन' : 'Login / Admin'}
+                </span>
+              </button>
+            )}
 
             {/* Notification Bell */}
             <button

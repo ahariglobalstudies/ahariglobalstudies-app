@@ -101,6 +101,35 @@ export interface NoteItem {
   isUploadedByAdmin?: boolean;
   uploaderName?: string;
   faculty?: string;
+  courseId?: string;
+  topicTitle?: string;
+  chapterIndex?: number;
+}
+
+export interface CurrentAffairsArticle {
+  id: string;
+  tag: string;
+  date: string;
+  titleHi: string;
+  titleEn: string;
+  summaryHi: string;
+  summaryEn: string;
+  pointsHi: string[];
+  pointsEn: string[];
+  mnemonicTip?: string;
+  badge: string;
+  readTime: string;
+  fullVerbatimArticle?: {
+    whyInNews: string;
+    keyPoints: string[];
+    mcqs: {
+      questionNumber: string;
+      question: string;
+      options: string[];
+      answer: string;
+    }[];
+    mainsAnalysis: string[];
+  };
 }
 
 export interface UserProfile {

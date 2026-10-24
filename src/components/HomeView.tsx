@@ -30,7 +30,7 @@ import {
   COURSES,
   AHARI_SIR_QUOTES,
 } from '../data/mockData';
-import { Course, TabType } from '../types';
+import { Course, TabType, CurrentAffairsArticle } from '../types';
 
 interface HomeViewProps {
   language: 'hi' | 'en';
@@ -40,32 +40,8 @@ interface HomeViewProps {
   onResumeLecture: (courseTitle: string, lectureTitle: string, videoUrl?: string) => void;
   onSelectCategoryFilter: (categoryName: string) => void;
   onStartDailyQuiz: () => void;
-}
-
-interface CurrentAffairsArticle {
-  id: string;
-  tag: string;
-  date: string;
-  titleHi: string;
-  titleEn: string;
-  summaryHi: string;
-  summaryEn: string;
-  pointsHi: string[];
-  pointsEn: string[];
-  mnemonicTip?: string;
-  badge: string;
-  readTime: string;
-  fullVerbatimArticle?: {
-    whyInNews: string;
-    keyPoints: string[];
-    mcqs: {
-      questionNumber: string;
-      question: string;
-      options: string[];
-      answer: string;
-    }[];
-    mainsAnalysis: string[];
-  };
+  customArticles?: CurrentAffairsArticle[];
+  enrolledCourseIds?: string[];
 }
 
 const CA_TAGS = [
@@ -190,11 +166,14 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onResumeLecture,
   onSelectCategoryFilter,
   onStartDailyQuiz,
+  customArticles = [],
+  enrolledCourseIds = [],
 }) => {
   const [activeBannerIndex, setActiveBannerIndex] = useState(0);
   const [selectedCaTag, setSelectedCaTag] = useState<string>('all');
   const [activeArticleModal, setActiveArticleModal] = useState<CurrentAffairsArticle | null>(null);
   const [showAllCaModal, setShowAllCaModal] = useState(false);
+  const [homeSelectedCategory, setHomeSelectedCategory] = useState<string>('all');
 
   // Auto banner slider
   useEffect(() => {
@@ -399,6 +378,48 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
         {/* Slidable Cards: Single horizontal slidable row */}
         <div className="flex items-stretch gap-3 overflow-x-auto no-scrollbar pb-2 -mx-4 px-4 snap-x snap-mandatory pt-0.5">
+          {/* Custom Admin Published Articles */}
+          {customArticles.map((art) => (
+            <div
+              key={art.id}
+              className="w-[280px] sm:w-[310px] shrink-0 snap-start bg-gradient-to-br from-amber-500/10 via-orange-50/50 to-white p-3.5 rounded-2xl border border-amber-400 shadow-2xs ring-1 ring-amber-400/40 flex flex-col justify-between transition-all"
+            >
+              <div>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-800 flex items-center justify-center shrink-0">
+                      <Sparkles className="w-4 h-4 text-amber-600" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] font-extrabold text-amber-800 uppercase truncate">
+                          {art.badge || (language === 'hi' ? 'सीधा प्रकाशित लेख' : 'Live Editorial')}
+                        </span>
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                      </div>
+                      <h4 className="font-bold text-xs text-slate-900 leading-tight truncate">
+                        {language === 'hi' ? art.titleHi : art.titleEn}
+                      </h4>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-[11px] text-slate-600 mt-2 line-clamp-2">
+                  {language === 'hi' ? art.summaryHi : art.summaryEn}
+                </p>
+              </div>
+              <div className="mt-2.5 pt-2 border-t border-amber-200/70 flex items-center justify-between">
+                <span className="text-[10px] text-slate-500 font-medium">⏱️ {art.readTime} • {art.date}</span>
+                <button
+                  onClick={() => setActiveArticleModal(art)}
+                  className="text-xs font-bold text-amber-800 hover:text-amber-950 flex items-center gap-1 active:scale-95"
+                >
+                  <span>{language === 'hi' ? 'लेख पढ़ें' : 'Read Article'}</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          ))}
+
           {/* Option 1: PM Surya Ghar Special Article */}
           <div
             id="ca-card-solar"
@@ -745,91 +766,164 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </button>
       </div>
 
-      {/* 5. POPULAR BATCHES (TOP COURSES CAROUSEL / LIST) */}
-      <div className="space-y-2.5">
+      {/* 5. POPULAR BATCHES (ALL COURSES WITH SUBJECT LOGO TABS) */}
+      <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">
-            {language === 'hi' ? 'लोकप्रिय बैच (Popular Batches)' : 'Popular Live Batches'}
-          </h3>
+          <div>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-indigo-600" />
+              <span>{language === 'hi' ? 'विषयवार ऑनलाइन बैच' : 'Subject Masterclass Batches'}</span>
+            </h3>
+            <p className="text-[11px] text-slate-500">
+              {language === 'hi' ? 'सभी 9 विषयवार स्पेशल बैच - शांति लाल अहारी सर' : 'All subject masterclass batches at only ₹199'}
+            </p>
+          </div>
           <button
             onClick={() => onNavigateTab('courses')}
             className="text-[11px] text-blue-700 font-semibold hover:underline"
           >
-            {language === 'hi' ? 'पूरा कोर्स देखें' : 'View All'}
+            {language === 'hi' ? 'सभी कोर्सेज ➔' : 'View All ➔'}
           </button>
         </div>
 
+        {/* Subject Logo Tabs Bar on Home */}
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar -mx-4 px-4 pb-0.5">
+          {[
+            { id: 'all', labelHi: 'सभी कोर्स', logo: '🌟' },
+            { id: 'MAPPING', labelHi: 'मैपिंग', logo: '🗺️' },
+            { id: 'HISTORY', labelHi: 'इतिहास', logo: '🏛️' },
+            { id: 'POLITY', labelHi: 'राजव्यवस्था', logo: '📜' },
+            { id: 'MATHEMATICS', labelHi: 'गणित', logo: '📐' },
+            { id: 'GEOGRAPHY', labelHi: 'भूगोल', logo: '🌍' },
+            { id: 'CURRENT AFFAIRS', labelHi: 'करेंट अफेयर्स', logo: '🔥' },
+            { id: 'HINDI', labelHi: 'हिंदी', logo: '📖' },
+            { id: 'REASONING', labelHi: 'रीजनिंग', logo: '🧠' },
+            { id: 'ECONOMY', labelHi: 'अर्थव्यवस्था', logo: '📈' },
+          ].map((tab) => {
+            const isSelected = homeSelectedCategory === tab.id;
+            const count =
+              tab.id === 'all'
+                ? COURSES.length
+                : COURSES.filter((c) => c.category === tab.id).length;
+
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setHomeSelectedCategory(tab.id)}
+                className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+                  isSelected
+                    ? 'bg-[#0a2240] text-white border-indigo-500 shadow-xs'
+                    : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                }`}
+              >
+                <span>{tab.logo}</span>
+                <span>{tab.labelHi}</span>
+                <span
+                  className={`text-[10px] px-1.5 rounded-full ${
+                    isSelected ? 'bg-amber-400 text-slate-950 font-bold' : 'bg-slate-100 text-slate-600'
+                  }`}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
         <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
-          {COURSES.slice(0, 6).map((course) => (
-            <div
-              key={course.id}
-              className="bg-white rounded-2xl p-2.5 sm:p-3 border border-slate-200/90 shadow-2xs hover:border-slate-300 transition-all flex flex-col justify-between"
-            >
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between gap-1 flex-wrap">
-                  <span className="text-[9px] font-bold text-[#0a2240] bg-blue-50 border border-blue-100 px-1.5 py-0.5 rounded-md">
-                    {course.category}
-                  </span>
-                  {course.isLiveNow ? (
-                    <span className="text-[9px] text-red-600 font-bold flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
-                      LIVE
+          {(homeSelectedCategory === 'all'
+            ? COURSES
+            : COURSES.filter((c) => c.category === homeSelectedCategory)
+          ).map((course) => {
+            const isEnrolled = enrolledCourseIds.includes(course.id);
+            return (
+              <div
+                key={course.id}
+                className="bg-white rounded-2xl p-2.5 sm:p-3 border-2 border-indigo-500 hover:border-indigo-600 shadow-md hover:shadow-lg transition-all flex flex-col justify-between"
+              >
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between gap-1 flex-wrap">
+                    <span className="text-[9px] font-bold text-[#0a2240] bg-blue-50 border border-blue-100 px-1.5 py-0.5 rounded-md">
+                      {course.category}
                     </span>
-                  ) : (
-                    <span className="text-[9px] text-slate-400 font-medium">
-                      {course.medium}
-                    </span>
-                  )}
-                </div>
+                    {course.isLiveNow ? (
+                      <span className="text-[9px] text-red-600 font-bold flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
+                        LIVE
+                      </span>
+                    ) : (
+                      <span className="text-[9px] text-slate-400 font-medium">
+                        {course.medium}
+                      </span>
+                    )}
+                  </div>
 
-                <h4 className="font-bold text-xs text-slate-900 leading-snug line-clamp-2 min-h-[34px]">
-                  {language === 'hi' && course.hindiTitle ? course.hindiTitle : course.title}
-                </h4>
+                  <h4 className="font-bold text-xs text-slate-900 leading-snug line-clamp-2 min-h-[34px]">
+                    {language === 'hi' && course.hindiTitle ? course.hindiTitle : course.title}
+                  </h4>
 
-                <p className="text-[10px] text-slate-500 truncate">
-                  {course.faculty}
-                </p>
+                  <p className="text-[10px] text-slate-500 truncate">
+                    {course.faculty}
+                  </p>
 
-                {/* Price and Rating */}
-                <div className="pt-1.5 border-t border-slate-100 flex items-baseline justify-between">
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-sm sm:text-base font-extrabold text-[#0a2240] font-mono">
-                      {course.price === 0 ? 'FREE' : `₹${course.price}`}
-                    </span>
-                    <span className="text-[10px] text-slate-400 line-through">
-                      ₹{course.originalPrice}
+                  {/* Price and Rating */}
+                  <div className="pt-1.5 border-t border-slate-100 flex items-baseline justify-between">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-sm sm:text-base font-extrabold text-[#0a2240] font-mono">
+                        {course.price === 0 ? 'FREE' : `₹${course.price}`}
+                      </span>
+                      {course.originalPrice > course.price && (
+                        <span className="text-[10px] text-slate-400 line-through">
+                          ₹{course.originalPrice}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-[10px] text-amber-600 font-semibold flex items-center gap-0.5">
+                      <Star className="w-2.5 h-2.5 fill-current" />
+                      {course.rating}
                     </span>
                   </div>
-                  <span className="text-[10px] text-amber-600 font-semibold flex items-center gap-0.5">
-                    <Star className="w-2.5 h-2.5 fill-current" />
-                    {course.rating}
-                  </span>
+
+                  {/* Validity & Enrolled */}
+                  <div className="flex items-center justify-between text-[9px] text-slate-400 pt-0.5">
+                    <span className="truncate">{course.validity}</span>
+                    <span className="shrink-0">{(course.enrolledCount / 1000).toFixed(0)}k छात्र</span>
+                  </div>
                 </div>
 
-                {/* Validity & Enrolled */}
-                <div className="flex items-center justify-between text-[9px] text-slate-400 pt-0.5">
-                  <span className="truncate">{course.validity}</span>
-                  <span className="shrink-0">{(course.enrolledCount / 1000).toFixed(0)}k छात्र</span>
+                {/* Action Buttons: 2 per card */}
+                <div className="grid grid-cols-2 gap-1.5 pt-2 mt-auto">
+                  <button
+                    onClick={() => onOpenCourseSyllabus(course)}
+                    className="py-1.5 px-1 rounded-lg border border-indigo-600 bg-indigo-50/70 hover:bg-indigo-100 text-indigo-950 text-[10px] font-bold text-center truncate transition-colors flex items-center justify-center gap-1 shadow-2xs"
+                  >
+                    <Play className="w-2.5 h-2.5 fill-current text-indigo-700" />
+                    <span>{language === 'hi' ? 'कोर्स डिटेल' : 'Course Detail'}</span>
+                  </button>
+
+                  {isEnrolled ? (
+                    /* प्रवेश बटन बंद / डिसेबल्ड और 'प्रवेश पूर्ण' बैज / डायरेक्ट क्लास एक्सेस */
+                    <button
+                      onClick={() => onOpenCourseSyllabus(course)}
+                      className="py-1.5 px-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-[10px] font-bold text-center truncate transition-all shadow-xs flex items-center justify-center gap-1"
+                      title="प्रवेश पूर्ण - क्लास शुरू करें"
+                    >
+                      <CheckCircle2 className="w-2.5 h-2.5 text-white shrink-0" />
+                      <span>{language === 'hi' ? 'प्रवेश पूर्ण' : 'Enrolled'}</span>
+                    </button>
+                  ) : (
+                    /* जब प्रवेश नहीं हुआ: सक्रिय 'प्रवेश' बटन */
+                    <button
+                      onClick={() => onEnrollCourse(course)}
+                      className="py-1.5 px-1 rounded-lg bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 text-[10px] font-bold text-center truncate transition-all shadow-xs"
+                    >
+                      {language === 'hi' ? 'प्रवेश' : 'Enroll'}
+                    </button>
+                  )}
                 </div>
               </div>
-
-              {/* Action Buttons: 2 per card */}
-              <div className="grid grid-cols-2 gap-1.5 pt-2 mt-auto">
-                <button
-                  onClick={() => onOpenCourseSyllabus(course)}
-                  className="py-1.5 px-1 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 text-[10px] font-semibold text-center truncate transition-colors"
-                >
-                  {language === 'hi' ? 'सिलेबस' : 'Syllabus'}
-                </button>
-                <button
-                  onClick={() => onEnrollCourse(course)}
-                  className="py-1.5 px-1 rounded-lg bg-[#0a2240] hover:bg-blue-900 active:scale-95 text-white text-[10px] font-bold text-center truncate transition-all shadow-2xs"
-                >
-                  {language === 'hi' ? `प्रवेश (₹${course.price})` : 'Enroll'}
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -1108,7 +1202,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
               <div className="space-y-2">
                 <span className="text-xs font-bold text-slate-700 block">सभी उपलब्ध अपडेट्स:</span>
-                {DAILY_CA_ARTICLES.map((art) => (
+                {[...customArticles, ...DAILY_CA_ARTICLES].map((art) => (
                   <div
                     key={art.id}
                     className="p-3 rounded-xl border border-slate-200 hover:border-blue-400 bg-white transition-all cursor-pointer"

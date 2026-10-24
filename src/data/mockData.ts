@@ -194,8 +194,9 @@ export const COURSES: Course[] = [
       },
     ],
     lectures: [
-      { id: 'lec-map-1', title: 'World Geography: विश्व की प्रमुख जलसंधियां (Straits) 40 मिनट में याद', duration: '55m', isFreeDemo: true, date: 'Live Yesterday' },
-      { id: 'lec-map-2', title: 'Indian Mapping: भारत के प्रमुख दर्रे और पहाड़ियां', duration: '1h 10m', isFreeDemo: true, date: 'Recorded' },
+      { id: 'lec-map-1', chapterIndex: 0, title: 'World Geography: विश्व की प्रमुख जलसंधियां (Straits) 40 मिनट में याद', duration: '55m', isFreeDemo: true, date: 'Live Yesterday' },
+      { id: 'lec-map-1b', chapterIndex: 1, title: 'यूरोप एवं अमेरिका: जिब्राल्टर, पनामा व महान झीलें', duration: '1h 05m', isFreeDemo: false, date: 'Recorded' },
+      { id: 'lec-map-2', chapterIndex: 2, title: 'Indian Mapping: भारत के प्रमुख दर्रे और पहाड़ियां', duration: '1h 10m', isFreeDemo: true, date: 'Recorded' },
     ],
   },
   {
@@ -235,8 +236,10 @@ export const COURSES: Course[] = [
       },
     ],
     lectures: [
-      { id: 'lec-his-1', title: 'सिंधु घाटी सभ्यता part 1 (हड़प्पा एवं नगर नियोजन)', duration: '1h 24m', isFreeDemo: true, date: '24 October 2026', videoUrl: 'https://youtu.be/RTXwE6g3Q4U?si=IpkySZpDoS4xvXuf' },
-      { id: 'lec-his-2', title: 'Modern History: 1857 की क्रांति और मंगल पांडे की शहादत', duration: '1h 15m', isFreeDemo: true, date: 'Recorded' },
+      { id: 'lec-his-1', chapterIndex: 0, title: 'सिंधु घाटी सभ्यता part 1 (हड़प्पा एवं नगर नियोजन)', duration: '1h 24m', isFreeDemo: true, date: '24 October 2026', videoUrl: 'https://youtu.be/RTXwE6g3Q4U?si=IpkySZpDoS4xvXuf' },
+      { id: 'lec-his-1b', chapterIndex: 0, title: 'वैदिक सभ्यता एवं 16 महाजनपद (मगध साम्राज्य का उदय)', duration: '1h 10m', isFreeDemo: true, date: 'Recorded' },
+      { id: 'lec-his-2', chapterIndex: 1, title: 'मध्यकालीन भारत: दिल्ली सल्तनत एवं मुगल साम्राज्य काल', duration: '1h 15m', isFreeDemo: false, date: 'Recorded' },
+      { id: 'lec-his-3', chapterIndex: 2, title: 'Modern History: 1857 की क्रांति और मंगल पांडे की शहादत', duration: '1h 18m', isFreeDemo: true, date: 'Recorded' },
     ],
   },
   {

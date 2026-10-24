@@ -25,6 +25,7 @@ interface CoursesViewProps {
   sheetClasses?: SheetClassRecord[];
   isSheetLoading?: boolean;
   onRefreshSheet?: () => void;
+  enrolledCourseIds?: string[];
 }
 
 export const CoursesView: React.FC<CoursesViewProps> = ({
@@ -36,6 +37,7 @@ export const CoursesView: React.FC<CoursesViewProps> = ({
   sheetClasses = [],
   isSheetLoading = false,
   onRefreshSheet,
+  enrolledCourseIds = [],
 }) => {
   const [selectedType, setSelectedType] = useState<CourseType | 'all'>('all');
   const [selectedCategory, setSelectedCategory] = useState<ExamCategory>(initialCategory);
@@ -311,12 +313,23 @@ export const CoursesView: React.FC<CoursesViewProps> = ({
                       <Play className="w-2.5 h-2.5 fill-current" />
                       <span>{language === 'hi' ? 'क्लासेस देखें' : 'Classes'}</span>
                     </button>
-                    <button
-                      onClick={() => onEnroll(course)}
-                      className="py-1.5 px-1 rounded-lg bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-bold text-[10px] text-center truncate shadow-2xs transition-all"
-                    >
-                      {course.price === 0 ? 'फ्री देखें' : 'प्रवेश लें'}
-                    </button>
+                    {enrolledCourseIds.includes(course.id) ? (
+                      /* Buy button closed/disabled for bought courses */
+                      <button
+                        onClick={() => onOpenSyllabus(course)}
+                        className="py-1.5 px-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold text-[10px] text-center truncate shadow-2xs flex items-center justify-center gap-1 active:scale-95"
+                      >
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
+                        <span>{language === 'hi' ? 'नामांकित' : 'Enrolled'}</span>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => onEnroll(course)}
+                        className="py-1.5 px-1 rounded-lg bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-bold text-[10px] text-center truncate shadow-2xs transition-all"
+                      >
+                        {course.price === 0 ? 'फ्री देखें' : 'प्रवेश लें'}
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

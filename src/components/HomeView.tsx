@@ -55,6 +55,17 @@ interface CurrentAffairsArticle {
   mnemonicTip?: string;
   badge: string;
   readTime: string;
+  fullVerbatimArticle?: {
+    whyInNews: string;
+    keyPoints: string[];
+    mcqs: {
+      questionNumber: string;
+      question: string;
+      options: string[];
+      answer: string;
+    }[];
+    mainsAnalysis: string[];
+  };
 }
 
 const CA_TAGS = [
@@ -68,10 +79,66 @@ const CA_TAGS = [
 
 const DAILY_CA_ARTICLES: CurrentAffairsArticle[] = [
   {
+    id: 'ca-pm-surya-ghar',
+    tag: 'daily',
+    date: '24 अक्टूबर 2026',
+    badge: 'विशेष संपादकीय • हॉट टॉपिक',
+    readTime: '4 मिनट',
+    titleHi: "भारत में नवीकरणीय ऊर्जा और रूफटॉप सोलर क्रांति: 'पीएम सूर्य घर' का प्रभाव",
+    titleEn: "Renewable Energy & Rooftop Solar Revolution in India: Impact of 'PM Surya Ghar'",
+    summaryHi: 'भारत ने वर्ष 2030 तक 500 गीगावाट (GW) गैर-जीवाश्म ईंधन आधारित बिजली क्षमता हासिल करने का राष्ट्रीय लक्ष्य रखा है। इस दिशा में ‘पीएम सूर्य घर: मुफ्त बिजली योजना’ ऊर्जा आत्मनिर्भरता का प्रमुख आधार बनी है।',
+    summaryEn: 'India sets national goal of 500 GW non-fossil power capacity by 2030. PM Surya Ghar: Muft Bijli Yojana powers domestic decentralized solar adoption.',
+    pointsHi: [
+      'नोडल मंत्रालय: नवीन एवं नवीकरणीय ऊर्जा मंत्रालय (MNRE)।',
+      'लक्ष्य: देश के 1 करोड़ घरों की छतों पर सोलर पैनल स्थापित करना।',
+      'मुफ्त बिजली प्रावधान: प्रत्येक पात्र परिवार को प्रति माह 300 यूनिट तक मुफ्त सौर बिजली सुनिश्चित करने का प्रावधान।',
+      'वित्तीय सहायता: 1-2 kW संयंत्रों पर लागत का ~60% केंद्रीय अनुदान, 3 kW+ पर ₹78,000 तक अधिकतम वित्तीय सहायता।'
+    ],
+    pointsEn: [
+      'Nodal Ministry: Ministry of New and Renewable Energy (MNRE).',
+      'National Target: Solar panel installations on 1 crore household rooftops across India.',
+      'Free Power Provision: Up to 300 units of free solar power per month for eligible households.',
+      'Financial Assistance: Up to ~60% central grant for 1-2 kW, and up to ₹78,000 for 3 kW or higher.'
+    ],
+    mnemonicTip: 'अहारी सर का मेमोरी सूत्र: 2030 (500 GW) + 1 करोड़ छतें + 300 यूनिट मुफ्त + MNRE = पीएम सूर्य घर का संपूर्ण निचोड़!',
+    fullVerbatimArticle: {
+      whyInNews:
+        'भारत ने वर्ष 2030 तक 500 गीगावाट (GW) गैर-जीवाश्म ईंधन आधारित बिजली क्षमता हासिल करने का राष्ट्रीय लक्ष्य रखा है। इस दिशा में विकेंद्रीकृत सौर ऊर्जा (Decentralized Solar Power) को बढ़ावा देने के लिए संचालित ‘पीएम सूर्य घर: मुफ्त बिजली योजना’ देश भर में घरेलू और संस्थागत स्तर पर ऊर्जा आत्मनिर्भरता का प्रमुख आधार बनकर उभरी है।',
+      keyPoints: [
+        'नोडल मंत्रालय: नवीन एवं नवीकरणीय ऊर्जा मंत्रालय (MNRE)।',
+        'लक्ष्य: देश के 1 करोड़ घरों की छतों पर सोलर पैनल स्थापित करना।',
+        'मुफ्त बिजली प्रावधान: इसके तहत प्रत्येक पात्र परिवार को प्रति माह 300 यूनिट तक मुफ्त सौर बिजली सुनिश्चित करने का प्रावधान है।',
+        'सब्सिडी संरचना (वित्तीय सहायता): 1 kW से 2 kW क्षमता तक के संयंत्रों के लिए लागत का लगभग 60% तक का केंद्रीय अनुदान।',
+        '3 kW या उससे अधिक क्षमता पर ₹78,000 तक की अधिकतम वित्तीय सहायता।',
+        'शेष राशि के लिए कम ब्याज दर पर संपार्श्विक-मुक्त (collateral-free) संस्थागत बैंक ऋण की सुविधा।'
+      ],
+      mcqs: [
+        {
+          questionNumber: 'प्रश्न 1',
+          question:
+            "'पीएम सूर्य घर: मुफ्त बिजली योजना' के तहत घरेलू उपभोक्ताओं को प्रति माह कितने यूनिट तक मुफ्त बिजली देने का लक्ष्य रखा गया है?",
+          options: ['(A) 100 यूनिट', '(B) 200 यूनिट', '(C) 300 यूनिट', '(D) 400 यूनिट'],
+          answer: 'उत्तर: (C) 300 यूनिट'
+        },
+        {
+          questionNumber: 'प्रश्न 2',
+          question:
+            'भारत ने किस वर्ष तक 500 गीगावाट गैर-जीवाश्म ऊर्जा क्षमता प्राप्त करने का संकल्प लिया है?',
+          options: ['(A) 2028', '(B) 2030', '(C) 2035', '(D) 2047'],
+          answer: 'उत्तर: (B) 2030'
+        }
+      ],
+      mainsAnalysis: [
+        'डिस्कॉम (DISCOMs) पर सकारात्मक प्रभाव: घरेलू छतों पर सौर उत्पादन से ट्रांसमिशन एवं डिस्ट्रीब्यूशन (T&D) नुकसान कम होता है और पीक-आवर लोड प्रबंधन में सहायता मिलती है।',
+        "कार्बन उत्सर्जन में कमी: यह पहल भारत के 'पंचामृत' लक्ष्यों और 2070 तक 'नेट ज़ीरो' कार्बन उत्सर्जन की प्रतिबद्धता को ज़मीनी स्तर पर गति देती है।"
+      ]
+    }
+  },
+  {
     id: 'ca-1',
     tag: 'daily',
     date: '24 अक्टूबर 2026',
-    badge: 'आज का मुख्य',
+    badge: 'दैनिक बुलेटिन',
     readTime: '3 मिनट',
     titleHi: 'राष्ट्रीय एवं अंतर्राष्ट्रीय समसामयिकी बुलेटिन: 24 अक्टूबर 2026',
     titleEn: 'National & International Current Affairs Bulletin: 24 Oct 2026',
@@ -332,11 +399,59 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
         {/* Slidable Cards: Single horizontal slidable row */}
         <div className="flex items-stretch gap-3 overflow-x-auto no-scrollbar pb-2 -mx-4 px-4 snap-x snap-mandatory pt-0.5">
-          {/* Option 1: Daily News Bulletin */}
+          {/* Option 1: PM Surya Ghar Special Article */}
+          <div
+            id="ca-card-solar"
+            className={`w-[280px] sm:w-[310px] shrink-0 snap-start bg-gradient-to-br from-amber-50/90 via-orange-50/40 to-white p-3.5 rounded-2xl border shadow-2xs flex flex-col justify-between transition-all ${
+              selectedCaTag === 'daily' || selectedCaTag === 'all'
+                ? 'border-amber-400 ring-1 ring-amber-400/40'
+                : 'border-slate-200/90'
+            }`}
+          >
+            <div>
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-700 flex items-center justify-center shrink-0">
+                    <Flame className="w-4 h-4 text-amber-600" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] font-extrabold text-amber-800 uppercase">
+                        {language === 'hi' ? 'विशेष लेख • हॉट टॉपिक' : 'Special Editorial'}
+                      </span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                    </div>
+                    <h4 className="font-bold text-xs text-slate-900 leading-tight">
+                      {language === 'hi'
+                        ? "सोलर क्रांति: 'पीएम सूर्य घर' योजना"
+                        : "Solar: 'PM Surya Ghar' Yojana"}
+                    </h4>
+                  </div>
+                </div>
+              </div>
+              <p className="text-[11px] text-slate-600 mt-2 line-clamp-2">
+                {language === 'hi'
+                  ? '2030 तक 500 GW लक्ष्य, 1 करोड़ छतें, 300 यूनिट मुफ्त बिजली, सब्सिडी संरचना एवं 2 मुख्य MCQs।'
+                  : '500 GW goal, 1 crore rooftops, 300 units free power, MNRE subsidy and key MCQs.'}
+              </p>
+            </div>
+            <div className="mt-2.5 pt-2 border-t border-amber-200/70 flex items-center justify-between">
+              <span className="text-[10px] text-slate-500 font-medium">⏱️ 4 min • प्रश्नोत्तरी सहित</span>
+              <button
+                onClick={() => setActiveArticleModal(DAILY_CA_ARTICLES[0])}
+                className="text-xs font-bold text-amber-800 hover:text-amber-950 flex items-center gap-1 active:scale-95"
+              >
+                <span>{language === 'hi' ? 'लेख पढ़ें' : 'Read Article'}</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Option 2: Daily News Bulletin */}
           <div
             id="ca-card-daily"
             className={`w-[275px] sm:w-[300px] shrink-0 snap-start bg-gradient-to-br from-white to-blue-50/50 p-3.5 rounded-2xl border shadow-2xs flex flex-col justify-between transition-all ${
-              selectedCaTag === 'daily' || selectedCaTag === 'all'
+              selectedCaTag === 'daily'
                 ? 'border-blue-300 ring-1 ring-blue-400/30'
                 : 'border-slate-200/90'
             }`}
@@ -369,7 +484,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             <div className="mt-2.5 pt-2 border-t border-blue-100/80 flex items-center justify-between">
               <span className="text-[10px] text-slate-500">⏱️ 3 min</span>
               <button
-                onClick={() => setActiveArticleModal(DAILY_CA_ARTICLES[0])}
+                onClick={() => setActiveArticleModal(DAILY_CA_ARTICLES[1])}
                 className="text-xs font-bold text-blue-700 hover:text-blue-900 flex items-center gap-1 active:scale-95"
               >
                 <span>{language === 'hi' ? 'बुलेटिन पढ़ें' : 'Read News'}</span>
@@ -792,28 +907,124 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
             {/* Content Body */}
             <div className="p-4.5 space-y-4 overflow-y-auto flex-1">
-              <div className="p-3 rounded-xl bg-blue-50/70 border border-blue-100 text-xs text-slate-700 leading-relaxed font-medium">
-                {language === 'hi' ? activeArticleModal.summaryHi : activeArticleModal.summaryEn}
-              </div>
+              {activeArticleModal.fullVerbatimArticle ? (
+                /* Full Verbatim 4-Part Article View */
+                <div className="space-y-4 text-xs">
+                  {/* Section 1: चर्चा में क्यों? */}
+                  <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200/80 space-y-1.5">
+                    <span className="font-bold text-amber-900 text-xs sm:text-sm block">
+                      1. चर्चा में क्यों?
+                    </span>
+                    <p className="text-slate-700 leading-relaxed font-medium">
+                      {activeArticleModal.fullVerbatimArticle.whyInNews}
+                    </p>
+                  </div>
 
-              <div>
-                <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wide mb-2">
-                  {language === 'hi' ? 'मुख्य परीक्षा बिंदु (Key Highlights):' : 'Key Exam Points:'}
-                </h4>
-                <div className="space-y-2">
-                  {(language === 'hi' ? activeArticleModal.pointsHi : activeArticleModal.pointsEn).map(
-                    (point, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-start gap-2.5 p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs text-slate-700"
-                      >
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                        <span>{point}</span>
-                      </div>
-                    )
-                  )}
+                  {/* Section 2: योजना की मुख्य विशेषताएं */}
+                  <div className="p-3.5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-2">
+                    <span className="font-bold text-[#0a2240] text-xs sm:text-sm block border-b border-slate-100 pb-1.5">
+                      2. योजना की मुख्य विशेषताएं (Exam Key Points)
+                    </span>
+                    <div className="space-y-2 pt-0.5">
+                      {activeArticleModal.fullVerbatimArticle.keyPoints.map((pt, pIdx) => (
+                        <div key={pIdx} className="flex items-start gap-2 text-slate-700">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-blue-700 shrink-0 mt-0.5" />
+                          <span className="leading-relaxed">{pt}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Section 3: बहुविकल्पीय प्रश्न (MCQs) */}
+                  <div className="p-3.5 rounded-2xl bg-blue-50/50 border border-blue-200/80 space-y-3">
+                    <div className="flex items-center justify-between border-b border-blue-200/60 pb-1.5">
+                      <span className="font-bold text-blue-900 text-xs sm:text-sm">
+                        3. परीक्षा उपयोगी बहुविकल्पीय प्रश्न (Practice MCQs)
+                      </span>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
+                        2 Questions
+                      </span>
+                    </div>
+
+                    <div className="space-y-3.5">
+                      {activeArticleModal.fullVerbatimArticle.mcqs.map((mcq, mIdx) => (
+                        <div
+                          key={mIdx}
+                          className="p-3 rounded-xl bg-white border border-blue-100 shadow-2xs space-y-2"
+                        >
+                          <div className="font-bold text-slate-900 flex items-start gap-1.5">
+                            <span className="px-1.5 py-0.5 rounded bg-blue-100 text-blue-800 text-[10px] font-mono shrink-0">
+                              {mcq.questionNumber}
+                            </span>
+                            <span className="leading-snug">{mcq.question}</span>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-1.5 pt-1">
+                            {mcq.options.map((opt, oIdx) => (
+                              <div
+                                key={oIdx}
+                                className={`p-2 rounded-lg text-[11px] font-medium border ${
+                                  mcq.answer.includes(opt.slice(0, 3))
+                                    ? 'bg-emerald-50 border-emerald-300 text-emerald-900 font-bold'
+                                    : 'bg-slate-50 border-slate-200 text-slate-700'
+                                }`}
+                              >
+                                {opt}
+                              </div>
+                            ))}
+                          </div>
+
+                          <div className="p-2 rounded-lg bg-emerald-100/70 text-emerald-900 font-bold text-[11px] flex items-center gap-1.5">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                            <span>{mcq.answer}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Section 4: मुख्य परीक्षा हेतु विश्लेषणात्मक बिंदु */}
+                  <div className="p-3.5 rounded-2xl bg-purple-50/50 border border-purple-200/80 space-y-2">
+                    <span className="font-bold text-purple-950 text-xs sm:text-sm block border-b border-purple-200/60 pb-1.5">
+                      4. मुख्य परीक्षा (Mains) हेतु विश्लेषणात्मक बिंदु
+                    </span>
+                    <div className="space-y-2 pt-0.5">
+                      {activeArticleModal.fullVerbatimArticle.mainsAnalysis.map((an, aIdx) => (
+                        <div key={aIdx} className="flex items-start gap-2 text-slate-700">
+                          <div className="w-1.5 h-1.5 rounded-full bg-purple-600 shrink-0 mt-1.5" />
+                          <span className="leading-relaxed">{an}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                /* Standard Bulletin View */
+                <>
+                  <div className="p-3 rounded-xl bg-blue-50/70 border border-blue-100 text-xs text-slate-700 leading-relaxed font-medium">
+                    {language === 'hi' ? activeArticleModal.summaryHi : activeArticleModal.summaryEn}
+                  </div>
+
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wide mb-2">
+                      {language === 'hi' ? 'मुख्य परीक्षा बिंदु (Key Highlights):' : 'Key Exam Points:'}
+                    </h4>
+                    <div className="space-y-2">
+                      {(language === 'hi' ? activeArticleModal.pointsHi : activeArticleModal.pointsEn).map(
+                        (point, idx) => (
+                          <div
+                            key={idx}
+                            className="flex items-start gap-2.5 p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs text-slate-700"
+                          >
+                            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                            <span>{point}</span>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
 
               {activeArticleModal.mnemonicTip && (
                 <div className="p-3 rounded-xl bg-amber-50 border border-amber-200">

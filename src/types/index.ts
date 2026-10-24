@@ -45,6 +45,8 @@ export interface Course {
     isFreeDemo?: boolean;
     date: string;
     videoUrl?: string;
+    chapterIndex?: number;
+    chapterTitle?: string;
   }[];
 }
 

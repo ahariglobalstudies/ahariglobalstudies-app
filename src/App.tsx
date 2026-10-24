@@ -302,6 +302,7 @@ export default function App() {
               sheetClasses={sheetClasses}
               isSheetLoading={isSheetLoading}
               onRefreshSheet={() => loadSheetData(false)}
+              enrolledCourseIds={user.enrolledCourseIds}
             />
           )}
 
@@ -419,12 +420,16 @@ export default function App() {
           isOpen={syllabusModal.isOpen}
           onClose={() => setSyllabusModal({ isOpen: false, course: null })}
           course={syllabusModal.course}
+          enrolledCourseIds={user.enrolledCourseIds}
           onWatchDemo={(lecTitle, vUrl) => {
             handleResumeLecture(syllabusModal.course!.title, lecTitle, vUrl);
           }}
           onEnroll={(course) => {
             setEnrollModal({ isOpen: true, course });
           }}
+          onOpenPdf={handleOpenPdf}
+          onDownloadNote={handleDownloadNote}
+          downloadedNoteIds={downloadedNoteIds}
         />
       )}
     </div>

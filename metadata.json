@@ -1,0 +1,8 @@
+{
+  "name": "KGS - Khan Sir Learning App",
+  "description": "Mobile-first EdTech learning platform inspired by AHARI Global Studies with live batches, test series, bilingual PDF notes, and student dashboard.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

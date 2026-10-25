@@ -1,10 +1,10 @@
 import { Course, MockTest, NoteItem, OrderRecord, UserProfile } from '../types';
 
 export const INITIAL_USER: UserProfile = {
-  name: 'Shantilal Meena',
-  studentId: 'AGS-2026-9941',
-  phone: '+91 98765 43210',
-  email: 'shantilalmeena994@gmail.com',
+  name: 'राहुल शर्मा (Rahul Sharma)',
+  studentId: 'AGS-STU-101',
+  phone: '+91 98290 11223',
+  email: 'rahul.student@gmail.com',
   targetExam: 'Subject Special Batches (AGS)',
   state: 'Rajasthan',
   enrolledCourseIds: ['course-history-special', 'course-mapping-special'],

@@ -38,6 +38,11 @@ import {
   Key,
   Download,
   PenTool,
+  AlertTriangle,
+  UserPlus,
+  MessageSquare,
+  CheckCircle,
+  ShieldAlert,
 } from 'lucide-react';
 import {
   DbUser,
@@ -50,6 +55,10 @@ import {
   DashboardContentRow,
   EditorialType,
   EditorialStatus,
+  DbRevisionRequest,
+  RevisionType,
+  RevisionStatus,
+  UserRole,
 } from '../types/cms';
 import { cmsStore, INITIAL_USERS } from '../services/cmsStore';
 
@@ -66,16 +75,41 @@ export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
   showToast,
   onDataChanged,
 }) => {
-  // Current Authenticated User (admin, teacher, or staff)
+  // Current Authenticated User (admin, teacher, staff, or student)
   const [currentUser, setCurrentUser] = useState<DbUser | null>(() => cmsStore.getCurrentUser());
 
-  // Login Form State
+  // Role Selection & Login Form State
+  const [loginRoleTab, setLoginRoleTab] = useState<UserRole>('admin');
   const [loginEmail, setLoginEmail] = useState('shantilalmeena994@gmail.com');
   const [loginPin, setLoginPin] = useState('9940');
   const [loginError, setLoginError] = useState<string | null>(null);
 
-  // Active Admin View Tab
-  const [activeAdminTab, setActiveAdminTab] = useState<'upload' | 'dashboard' | 'editorials' | 'teachers' | 'sql'>('upload');
+  // Student Self-Registration State
+  const [isStudentRegister, setIsStudentRegister] = useState(false);
+  const [regName, setRegName] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [regPhone, setRegPhone] = useState('');
+  const [regTargetExam, setRegTargetExam] = useState('RAS & SI Special Batch (AGS)');
+  const [regPin, setRegPin] = useState('1111');
+
+  // Active Admin View Tab (Strictly role-isolated)
+  const [activeAdminTab, setActiveAdminTab] = useState<
+    'upload' | 'dashboard' | 'editorials' | 'teachers' | 'sql' | 'revisions'
+  >('upload');
+
+  // Staff Revision Requests State
+  const [revisionRequests, setRevisionRequests] = useState<DbRevisionRequest[]>([]);
+  const [revSelectedContent, setRevSelectedContent] = useState<string>('');
+  const [revRequestType, setRevRequestType] = useState<RevisionType>('correction');
+  const [revIssueDescription, setRevIssueDescription] = useState<string>('');
+  const [revProposedCorrection, setRevProposedCorrection] = useState<string>('');
+
+  // Staff Appointment State (Managed by Admin in Teachers Tab)
+  const [staffName, setStaffName] = useState('');
+  const [staffEmail, setStaffEmail] = useState('');
+  const [staffPhone, setStaffPhone] = useState('');
+  const [staffPin, setStaffPin] = useState('1234');
+  const [staffSpecialty, setStaffSpecialty] = useState('कंटेंट अपलोड एवं तकनीकी सपोर्ट');
 
   // --- CASCADING UPLOAD FORM STATE ---
   // Step 0: Upload Category Toggle: 'paid_course' vs 'editorial'
@@ -257,11 +291,50 @@ export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
       setLoginError(result.error || 'लॉगिन विफल');
       return;
     }
-    setCurrentUser(result.user || null);
-    if (showToast) {
-      showToast(`स्वागत है ${result.user?.name}! भूमिका: ${result.user?.role}`);
+    const authedUser = result.user || null;
+    setCurrentUser(authedUser);
+
+    if (authedUser?.role === 'student') {
+      if (showToast) {
+        showToast(`🎓 विद्यार्थी के रूप में स्वागत है, ${authedUser.name}! प्रोफाइल अपडेट हो गया है।`);
+      }
+      refreshCmsData(authedUser);
+      onClose();
+      return;
     }
-    refreshCmsData(result.user);
+
+    if (authedUser?.role === 'teacher') {
+      setActiveAdminTab('upload');
+    } else if (authedUser?.role === 'staff') {
+      setActiveAdminTab('upload');
+    }
+
+    if (showToast) {
+      showToast(`स्वागत है ${authedUser?.name}! अधिकृत भूमिका: ${authedUser?.role}`);
+    }
+    refreshCmsData(authedUser);
+  };
+
+  // Handle Student Registration
+  const handleStudentRegister = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!regName.trim() || !regEmail.trim()) {
+      setLoginError('कृपया नाम एवं ईमेल दर्ज करें!');
+      return;
+    }
+    const student = cmsStore.registerStudent({
+      name: regName.trim(),
+      email: regEmail.trim(),
+      phone: regPhone.trim() || '+91 98290 11223',
+      target_exam: regTargetExam,
+      pin: regPin.trim() || '1111',
+    });
+    setCurrentUser(student);
+    if (showToast) {
+      showToast(`🎓 विद्यार्थी पंजीकरण सफल! आईडी: ${student.display_id || student.id}`);
+    }
+    refreshCmsData(student);
+    onClose();
   };
 
   // Handle Logout
@@ -274,20 +347,106 @@ export const AdminPortalModal: React.FC<AdminPortalModalProps> = ({
     refreshCmsData(null);
   };
 
-  // Quick preset login for testing (Admin, Teachers, Staff)
-  const handleQuickLogin = (preset: 'admin' | 'staff' | 'teacher_kagad' | 'teacher_bhavesh') => {
+  // Quick preset login for testing all 4 roles
+  const handleQuickLogin = (
+    preset: 'admin' | 'staff' | 'teacher_kagad' | 'teacher_bhavesh' | 'student_rahul' | 'student_priya'
+  ) => {
     if (preset === 'admin') {
       setLoginEmail('shantilalmeena994@gmail.com');
       setLoginPin('9940');
+      setLoginRoleTab('admin');
     } else if (preset === 'teacher_kagad') {
       setLoginEmail('kagad.sir@ags.edu');
       setLoginPin('5555');
+      setLoginRoleTab('teacher');
     } else if (preset === 'teacher_bhavesh') {
       setLoginEmail('bhavesh.faculty@ags.edu');
       setLoginPin('7777');
-    } else {
+      setLoginRoleTab('teacher');
+    } else if (preset === 'staff') {
       setLoginEmail('staff@ags.edu');
       setLoginPin('1234');
+      setLoginRoleTab('staff');
+    } else if (preset === 'student_rahul') {
+      setLoginEmail('rahul.student@gmail.com');
+      setLoginPin('1111');
+      setLoginRoleTab('student');
+    } else if (preset === 'student_priya') {
+      setLoginEmail('priya.verma@gmail.com');
+      setLoginPin('2222');
+      setLoginRoleTab('student');
+    }
+  };
+
+  // Staff Submit Revision Request
+  const handleStaffSubmitRevision = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!revIssueDescription.trim()) {
+      if (showToast) showToast('कृपया समस्या या सुधार का विवरण दर्ज करें!');
+      return;
+    }
+
+    const targetRow = dashboardRows.find((r) => r.videoId === revSelectedContent);
+    cmsStore.addRevisionRequest({
+      staff_id: currentUser?.id || 'usr_staff_002',
+      staff_name: currentUser?.name || 'Technical Staff',
+      content_type: 'video',
+      content_id: targetRow?.videoId || revSelectedContent || `content-${Date.now()}`,
+      content_title: targetRow?.videoTitle || 'कोर्स व्याख्यान सामग्री',
+      course_id: targetRow?.courseId,
+      course_title: targetRow?.courseTitle || (coursesList[0]?.title || 'कोर्स'),
+      request_type: revRequestType,
+      issue_description: revIssueDescription.trim(),
+      proposed_correction: revProposedCorrection.trim(),
+    });
+
+    setRevIssueDescription('');
+    setRevProposedCorrection('');
+    setRevisionRequests(cmsStore.getRevisionRequests());
+    refreshCmsData();
+    if (showToast) {
+      showToast('✓ एडमिन को सुधार अनुरोध सफलतापूर्वक भेजा गया!');
+    }
+  };
+
+  // Admin Resolve Revision Request
+  const handleAdminResolveRevision = (
+    reqId: string,
+    status: 'approved' | 'rejected',
+    remarks?: string
+  ) => {
+    cmsStore.resolveRevisionRequest(reqId, status, remarks);
+    setRevisionRequests(cmsStore.getRevisionRequests());
+    refreshCmsData();
+    if (showToast) {
+      showToast(
+        status === 'approved'
+          ? '✓ सुधार अनुरोध स्वीकृत किया गया एवं परिवर्तन लागू हुआ!'
+          : '✕ अनुरोध अस्वीकृत किया गया।'
+      );
+    }
+  };
+
+  // Admin Appoint Staff
+  const handleAppointStaff = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!staffName.trim() || !staffEmail.trim()) {
+      if (showToast) showToast('कृपया स्टाफ का नाम व ईमेल दर्ज करें!');
+      return;
+    }
+    const created = cmsStore.addStaff({
+      name: staffName.trim(),
+      email: staffEmail.trim(),
+      phone: staffPhone.trim(),
+      pin: staffPin.trim() || '1234',
+      specialty: staffSpecialty.trim(),
+    });
+    setStaffName('');
+    setStaffEmail('');
+    setStaffPhone('');
+    refreshCmsData();
+    if (showToast) {
+      showToast(`✓ टेक्निकल स्टाफ "${created.name}" नियुक्त! आईडी: ${created.display_id}`);
     }
   };
 
@@ -811,123 +970,489 @@ $$;`;
           </button>
         </div>
 
-        {/* AUTH CHECK: If not logged in as Admin, Teacher or Staff, show secure login form */}
-        {!currentUser ? (
+        {/* AUTH CHECK: If logged in as student or not logged in, handle accordingly */}
+        {currentUser?.role === 'student' ? (
           <div className="flex-1 overflow-y-auto p-6 sm:p-10 flex flex-col items-center justify-center bg-slate-50">
-            <div className="max-w-md w-full bg-white rounded-2xl p-6 sm:p-8 shadow-xl border border-slate-200">
-              <div className="text-center space-y-2 mb-6">
-                <div className="w-14 h-14 mx-auto rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 shadow-inner">
-                  <Lock className="w-7 h-7" />
-                </div>
-                <h3 className="text-lg font-bold text-slate-900">सुरक्षित एडमिन / शिक्षक / स्टाफ प्रवेश</h3>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  केवल <strong className="text-slate-700 font-semibold">'admin'</strong>,{' '}
-                  <strong className="text-slate-700 font-semibold">'teacher'</strong> एवं{' '}
-                  <strong className="text-slate-700 font-semibold">'staff'</strong> रोल वाले अधिकृत
-                  सहयोगी ही इस पोर्टल का उपयोग कर सकते हैं।
+            <div className="max-w-md w-full bg-white rounded-2xl p-6 sm:p-8 shadow-xl border border-indigo-200 text-center space-y-4">
+              <div className="w-16 h-16 mx-auto rounded-2xl bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-600 text-2xl font-bold shadow-inner">
+                🎓
+              </div>
+              <div>
+                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800 uppercase tracking-wider">
+                  विद्यार्थी प्रोफाइल सक्रिय (Student Session)
+                </span>
+                <h3 className="text-base font-bold text-slate-900 mt-2">
+                  आप वर्तमान में विद्यार्थी <span className="text-[#0a2240] font-extrabold">{currentUser.name}</span> के रूप में लॉग इन हैं
+                </h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  आईडी: <span className="font-mono font-bold text-indigo-700">{currentUser.display_id || currentUser.id}</span>
                 </p>
               </div>
 
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-900 text-left space-y-1">
+                <span className="font-bold flex items-center gap-1.5 text-amber-900">
+                  <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>रोल आइसोलेशन सुरक्षा निर्देश:</span>
+                </span>
+                <p className="text-[11px] text-amber-800 leading-relaxed">
+                  विद्यार्थी रोल से डेटाबेस स्कीमा, शिक्षक प्रबंधन या कोर्स कंटेंट अपलोडिंग अनुमत नहीं है। 
+                  आप अपने खरीदे गए बैच, रसीदें और अध्ययन नोट्स सीधे ऐप के मुख्य इंटरफेस से देख सकते हैं। 
+                  यदि आप शिक्षक या एडमिन हैं तो नीचे "भूमिका बदलें" पर क्लिक करके संबंधित रोल से लॉगिन करें।
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="flex-1 py-2.5 bg-[#0a2240] hover:bg-[#133560] text-white text-xs font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5 active:scale-95"
+                >
+                  <LogOut className="w-4 h-4 text-amber-400" />
+                  <span>भूमिका बदलें / एडमिन-टीचर लॉगिन</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition-all"
+                >
+                  वापस ऐप पर जाएं
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : !currentUser ? (
+          <div className="flex-1 overflow-y-auto p-4 sm:p-8 flex flex-col items-center justify-center bg-slate-50">
+            <div className="max-w-lg w-full bg-white rounded-2xl p-5 sm:p-7 shadow-xl border border-slate-200 space-y-5">
+              
+              <div className="text-center space-y-1">
+                <div className="w-12 h-12 mx-auto rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 shadow-inner">
+                  <Lock className="w-6 h-6" />
+                </div>
+                <h3 className="text-base font-bold text-slate-900">
+                  भूमिका आधारित सुरक्षित प्रवेश (Role-Based Access Control)
+                </h3>
+                <p className="text-xs text-slate-500">
+                  कृपया अपनी भूमिका (Role) चुनें और संबंधित क्रेडेंशियल दर्ज करें
+                </p>
+              </div>
+
+              {/* ROLE SELECTION TABS */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLoginRoleTab('admin');
+                    handleQuickLogin('admin');
+                    setIsStudentRegister(false);
+                  }}
+                  className={`py-2 px-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                    loginRoleTab === 'admin'
+                      ? 'bg-[#0a2240] text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                  }`}
+                >
+                  <span>👑</span>
+                  <span>1. एडमिन</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLoginRoleTab('teacher');
+                    handleQuickLogin('teacher_kagad');
+                    setIsStudentRegister(false);
+                  }}
+                  className={`py-2 px-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                    loginRoleTab === 'teacher'
+                      ? 'bg-[#0a2240] text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                  }`}
+                >
+                  <span>👨‍🏫</span>
+                  <span>2. शिक्षक</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLoginRoleTab('student');
+                    handleQuickLogin('student_rahul');
+                  }}
+                  className={`py-2 px-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                    loginRoleTab === 'student'
+                      ? 'bg-[#0a2240] text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                  }`}
+                >
+                  <span>🎓</span>
+                  <span>3. विद्यार्थी</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLoginRoleTab('staff');
+                    handleQuickLogin('staff');
+                    setIsStudentRegister(false);
+                  }}
+                  className={`py-2 px-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                    loginRoleTab === 'staff'
+                      ? 'bg-[#0a2240] text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                  }`}
+                >
+                  <span>🛠️</span>
+                  <span>4. स्टाफ</span>
+                </button>
+              </div>
+
+              {/* ROLE EXPLANATION CARD */}
+              <div className="p-3 rounded-xl border text-xs leading-relaxed transition-all">
+                {loginRoleTab === 'admin' && (
+                  <div className="bg-amber-50/80 border-amber-200 text-amber-950 space-y-1">
+                    <strong className="text-amber-900 block font-bold flex items-center gap-1">
+                      <span>👑</span>
+                      <span>एडमिन सर्वाधिकार (Super Admin Control):</span>
+                    </strong>
+                    <p className="text-[11px] text-amber-900">
+                      कोर्स पंजीकरण, शिक्षकों व स्टाफ की भर्ती, कोर्स आवंटन (Course Allotment), 
+                      कंटेंट ओवरव्यू टेबल, SQL स्कीमा, करेंट अफेयर्स पब्लिशर एवं टेक्निकल स्टाफ सुधार अनुरोध समीक्षा का संपूर्ण अधिकार।
+                    </p>
+                  </div>
+                )}
+
+                {loginRoleTab === 'teacher' && (
+                  <div className="bg-indigo-50/80 border-indigo-200 text-indigo-950 space-y-1">
+                    <strong className="text-indigo-900 block font-bold flex items-center gap-1">
+                      <span>👨‍🏫</span>
+                      <span>शिक्षक भूमिका (Faculty Multi-Teacher Isolation):</span>
+                    </strong>
+                    <p className="text-[11px] text-indigo-900">
+                      शिक्षक केवल अपने अधिकृत/आवंटित कोर्स (Assigned Courses) का कंटेंट देख, अपलोड और संशोधन कर सकते हैं। 
+                      अन्य शिक्षकों के कोर्स, डेटाबेस स्कीमा और एडमिन मेनू पूरी तरह बंद रहेंगे।
+                    </p>
+                  </div>
+                )}
+
+                {loginRoleTab === 'student' && (
+                  <div className="bg-emerald-50/80 border-emerald-200 text-emerald-950 space-y-1">
+                    <strong className="text-emerald-900 block font-bold flex items-center gap-1">
+                      <span>🎓</span>
+                      <span>विद्यार्थी लॉगिन व प्रोफाइल (Student Access):</span>
+                    </strong>
+                    <p className="text-[11px] text-emerald-900">
+                      छात्र केवल अपने नामांकित बैच, क्लास लेक्चर्स, डाउनलोडेड नोट्स, टेस्ट सीरीज और अपनी व्यक्तिगत ऑर्डर रसीदें देख सकते हैं। 
+                      प्रोफ़ाइल टैब में छात्र का अपना नाम व आईडी प्रदर्शित होगी।
+                    </p>
+                  </div>
+                )}
+
+                {loginRoleTab === 'staff' && (
+                  <div className="bg-blue-50/80 border-blue-200 text-blue-950 space-y-1">
+                    <strong className="text-blue-900 block font-bold flex items-center gap-1">
+                      <span>🛠️</span>
+                      <span>टेक्निकल स्टाफ / ऑपरेटर (Technical Staff Workflow):</span>
+                    </strong>
+                    <p className="text-[11px] text-blue-900">
+                      वीडियो लेक्चर, क्लास हैंडआउट पीडीएफ एवं ई-बुक अपलोड करने का अधिकार। 
+                      पूर्व में अपलोड सामग्री में गलतियों में सुधार या डिलीट करने हेतु यह एडमिन को 'सुधार अनुरोध (Revision Request)' भेज सकेंगे।
+                    </p>
+                  </div>
+                )}
+              </div>
+
               {loginError && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-start gap-2 animate-in fade-in">
+                <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-start gap-2 animate-in fade-in">
                   <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
                   <p>{loginError}</p>
                 </div>
               )}
 
-              <form onSubmit={handleLoginSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                    अधिकृत ईमेल पता (Authorized Email)
-                  </label>
-                  <input
-                    type="email"
-                    value={loginEmail}
-                    onChange={(e) => setLoginEmail(e.target.value)}
-                    required
-                    placeholder="name@ags.edu"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0a2240]"
-                  />
+              {/* STUDENT REGISTER TOGGLE (Shown only when student tab is active) */}
+              {loginRoleTab === 'student' && (
+                <div className="flex p-1 bg-slate-100 rounded-lg text-xs font-semibold">
+                  <button
+                    type="button"
+                    onClick={() => setIsStudentRegister(false)}
+                    className={`flex-1 py-1.5 rounded-md transition-all ${
+                      !isStudentRegister ? 'bg-white text-slate-900 shadow-2xs font-bold' : 'text-slate-500'
+                    }`}
+                  >
+                    मौजूदा छात्र लॉगिन
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsStudentRegister(true)}
+                    className={`flex-1 py-1.5 rounded-md transition-all flex items-center justify-center gap-1 ${
+                      isStudentRegister ? 'bg-emerald-600 text-white shadow-2xs font-bold' : 'text-slate-500'
+                    }`}
+                  >
+                    <UserPlus className="w-3.5 h-3.5" />
+                    <span>➕ नया छात्र रजिस्ट्रेशन</span>
+                  </button>
                 </div>
+              )}
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                    सुरक्षा पिन (Security PIN)
-                  </label>
-                  <input
-                    type="password"
-                    maxLength={6}
-                    value={loginPin}
-                    onChange={(e) => setLoginPin(e.target.value)}
-                    required
-                    placeholder="••••"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs text-slate-900 tracking-widest text-center text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#0a2240]"
-                  />
-                </div>
+              {/* FORM: STUDENT REGISTRATION OR STANDARD LOGIN */}
+              {loginRoleTab === 'student' && isStudentRegister ? (
+                <form onSubmit={handleStudentRegister} className="space-y-3 animate-in fade-in">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                      विद्यार्थी का पूरा नाम (Student Name) *
+                    </label>
+                    <input
+                      type="text"
+                      value={regName}
+                      onChange={(e) => setRegName(e.target.value)}
+                      required
+                      placeholder="उदा. राहुल शर्मा"
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
 
-                <button
-                  type="submit"
-                  className="w-full py-2.5 bg-[#0a2240] hover:bg-[#133560] text-white text-xs font-bold rounded-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-md"
-                >
-                  <ShieldCheck className="w-4 h-4 text-amber-400" />
-                  <span>सत्यापित करें एवं पोर्टल खोलें</span>
-                </button>
-              </form>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                        ईमेल पता *
+                      </label>
+                      <input
+                        type="email"
+                        value={regEmail}
+                        onChange={(e) => setRegEmail(e.target.value)}
+                        required
+                        placeholder="student@example.com"
+                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                        मोबाइल नंबर *
+                      </label>
+                      <input
+                        type="tel"
+                        value={regPhone}
+                        onChange={(e) => setRegPhone(e.target.value)}
+                        required
+                        placeholder="+91 98290 12345"
+                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      />
+                    </div>
+                  </div>
 
-              {/* Demo Credentials Quick-Selector for testing */}
-              <div className="mt-6 pt-5 border-t border-slate-100">
-                <span className="text-[11px] font-semibold text-slate-400 block mb-2 text-center uppercase tracking-wider">
-                  त्वरित टेस्ट क्रेडेंशियल्स (Quick Test Sign-in)
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                        लक्ष्य परीक्षा (Target Exam)
+                      </label>
+                      <select
+                        value={regTargetExam}
+                        onChange={(e) => setRegTargetExam(e.target.value)}
+                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      >
+                        <option value="RAS & SI Special Batch (AGS)">RAS & SI Special Batch</option>
+                        <option value="Subject Special Batches (AGS)">विषयवार स्पेशल बैच (Mapping/History)</option>
+                        <option value="Teacher Grade 1st & 2nd Exam">शिक्षक भर्ती ग्रेड 1 व 2</option>
+                        <option value="UPSC Civil Services Foundation">UPSC CSE Foundation</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                        सुरक्षा पिन (4-अंकीय PIN) *
+                      </label>
+                      <input
+                        type="password"
+                        maxLength={4}
+                        value={regPin}
+                        onChange={(e) => setRegPin(e.target.value)}
+                        required
+                        placeholder="1111"
+                        className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 text-slate-900 text-center font-bold tracking-widest focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-md mt-2"
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                    <span>पंजीकरण करें एवं तुरंत प्रवेश लें (Register & Sign in)</span>
+                  </button>
+                </form>
+              ) : (
+                <form onSubmit={handleLoginSubmit} className="space-y-3.5">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      {loginRoleTab === 'student' ? 'छात्र ईमेल / फोन / आईडी' : 'अधिकृत ईमेल या आईडी'} *
+                    </label>
+                    <input
+                      type="text"
+                      value={loginEmail}
+                      onChange={(e) => setLoginEmail(e.target.value)}
+                      required
+                      placeholder={
+                        loginRoleTab === 'admin'
+                          ? 'shantilalmeena994@gmail.com'
+                          : loginRoleTab === 'teacher'
+                          ? 'kagad.sir@ags.edu या bhavesh.faculty@ags.edu'
+                          : loginRoleTab === 'staff'
+                          ? 'staff@ags.edu'
+                          : 'rahul.student@gmail.com या फोन नंबर'
+                      }
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0a2240]"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-xs font-bold text-slate-700">
+                        सुरक्षा पिन (Security PIN) *
+                      </label>
+                      <span className="text-[10px] text-slate-400 font-mono">
+                        पिन भूलने पर त्वरित टेस्ट बटन का उपयोग करें
+                      </span>
+                    </div>
+                    <input
+                      type="password"
+                      maxLength={6}
+                      value={loginPin}
+                      onChange={(e) => setLoginPin(e.target.value)}
+                      required
+                      placeholder="••••"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs text-slate-900 tracking-widest text-center text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#0a2240]"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-2.5 bg-[#0a2240] hover:bg-[#133560] text-white text-xs font-bold rounded-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-md"
+                  >
+                    <ShieldCheck className="w-4 h-4 text-amber-400" />
+                    <span>
+                      {loginRoleTab === 'student' ? 'विद्यार्थी के रूप में लॉगिन करें' : 'सत्यापित करें एवं पोर्टल खोलें'}
+                    </span>
+                  </button>
+                </form>
+              )}
+
+              {/* DEMO CREDENTIALS QUICK-SELECTORS */}
+              <div className="pt-3 border-t border-slate-100">
+                <span className="text-[10px] font-bold text-slate-400 block mb-2 text-center uppercase tracking-wider">
+                  त्वरित 1-क्लिक टेस्ट बटन (Quick 1-Click Role Fill)
                 </span>
-                <div className="grid grid-cols-2 gap-2">
+                
+                {loginRoleTab === 'admin' && (
                   <button
                     type="button"
                     onClick={() => handleQuickLogin('admin')}
-                    className="p-2 rounded-lg bg-amber-50 hover:bg-amber-100 border border-amber-200 text-left transition-all"
+                    className="w-full p-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-300 text-left transition-all flex items-center justify-between"
                   >
-                    <span className="text-[10px] font-bold text-amber-900 block flex items-center gap-1">
-                      👑 <span>Admin (शान्तिलाल)</span>
+                    <div>
+                      <span className="text-xs font-bold text-amber-950 flex items-center gap-1.5">
+                        👑 <span>Shantilal Meena (Super Admin / Director)</span>
+                      </span>
+                      <span className="text-[10px] text-amber-800 block">
+                        shantilalmeena994@gmail.com • सर्वाधिकार व पूर्ण नियंत्रण
+                      </span>
+                    </div>
+                    <span className="text-xs font-mono font-bold bg-amber-200/80 px-2 py-1 rounded text-amber-950 shrink-0">
+                      PIN: 9940
                     </span>
-                    <span className="text-[9px] text-amber-700 truncate block">shantilalmeena994...</span>
-                    <span className="text-[9px] font-mono text-amber-800">PIN: 9940 (All Access)</span>
                   </button>
+                )}
 
-                  <button
-                    type="button"
-                    onClick={() => handleQuickLogin('teacher_kagad')}
-                    className="p-2 rounded-lg bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-left transition-all"
-                  >
-                    <span className="text-[10px] font-bold text-indigo-900 block flex items-center gap-1">
-                      👨‍🏫 <span>कागद सर (Teacher)</span>
-                    </span>
-                    <span className="text-[9px] text-indigo-700 truncate block">kagad.sir@ags.edu</span>
-                    <span className="text-[9px] font-mono text-indigo-800">PIN: 5555 (Maths Only)</span>
-                  </button>
+                {loginRoleTab === 'teacher' && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleQuickLogin('teacher_kagad')}
+                      className="p-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-left transition-all"
+                    >
+                      <span className="text-xs font-bold text-indigo-950 flex items-center gap-1">
+                        👨‍🏫 <span>कागद सर (गणित विशेषज्ञ)</span>
+                      </span>
+                      <span className="text-[10px] text-indigo-800 block truncate">
+                        केवल गणित स्पेशल बैच का एक्सेस
+                      </span>
+                      <span className="text-[10px] font-mono font-semibold text-indigo-900">
+                        PIN: 5555
+                      </span>
+                    </button>
 
-                  <button
-                    type="button"
-                    onClick={() => handleQuickLogin('teacher_bhavesh')}
-                    className="p-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-left transition-all"
-                  >
-                    <span className="text-[10px] font-bold text-emerald-900 block flex items-center gap-1">
-                      👨‍🏫 <span>भावेश सर (Teacher)</span>
-                    </span>
-                    <span className="text-[9px] text-emerald-700 truncate block">bhavesh.faculty@ags...</span>
-                    <span className="text-[9px] font-mono text-emerald-800">PIN: 7777 (Map+Hist)</span>
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => handleQuickLogin('teacher_bhavesh')}
+                      className="p-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-left transition-all"
+                    >
+                      <span className="text-xs font-bold text-emerald-950 flex items-center gap-1">
+                        👨‍🏫 <span>भावेश सर (मैपिंग व इतिहास)</span>
+                      </span>
+                      <span className="text-[10px] text-emerald-800 block truncate">
+                        केवल 2 कोर्स (मैपिंग + इतिहास)
+                      </span>
+                      <span className="text-[10px] font-mono font-semibold text-emerald-900">
+                        PIN: 7777
+                      </span>
+                    </button>
+                  </div>
+                )}
 
+                {loginRoleTab === 'student' && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleQuickLogin('student_rahul')}
+                      className="p-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-left transition-all"
+                    >
+                      <span className="text-xs font-bold text-indigo-950 flex items-center gap-1">
+                        🎓 <span>राहुल शर्मा (RAS / SI छात्र)</span>
+                      </span>
+                      <span className="text-[10px] text-indigo-800 block truncate">
+                        2 बैच सक्रिय • 14 टेस्ट पूर्ण
+                      </span>
+                      <span className="text-[10px] font-mono font-semibold text-indigo-900">
+                        PIN: 1111
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleQuickLogin('student_priya')}
+                      className="p-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-left transition-all"
+                    >
+                      <span className="text-xs font-bold text-emerald-950 flex items-center gap-1">
+                        🎓 <span>प्रिया वर्मा (शिक्षक भर्ती छात्रा)</span>
+                      </span>
+                      <span className="text-[10px] text-emerald-800 block truncate">
+                        गणित स्पेशल बैच नामांकित
+                      </span>
+                      <span className="text-[10px] font-mono font-semibold text-emerald-900">
+                        PIN: 2222
+                      </span>
+                    </button>
+                  </div>
+                )}
+
+                {loginRoleTab === 'staff' && (
                   <button
                     type="button"
                     onClick={() => handleQuickLogin('staff')}
-                    className="p-2 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 text-left transition-all"
+                    className="w-full p-2.5 rounded-xl bg-blue-50 hover:bg-blue-100 border border-blue-300 text-left transition-all flex items-center justify-between"
                   >
-                    <span className="text-[10px] font-bold text-blue-900 block flex items-center gap-1">
-                      👤 <span>Content Staff</span>
+                    <div>
+                      <span className="text-xs font-bold text-blue-950 flex items-center gap-1.5">
+                        🛠️ <span>सुनील वर्मा (कंटेंट व टेक्निकल ऑपरेटर)</span>
+                      </span>
+                      <span className="text-[10px] text-blue-800 block">
+                        staff@ags.edu • वीडियो व नोट्स अपलोड • सुधार अनुरोध प्रेषण
+                      </span>
+                    </div>
+                    <span className="text-xs font-mono font-bold bg-blue-200/80 px-2 py-1 rounded text-blue-950 shrink-0">
+                      PIN: 1234
                     </span>
-                    <span className="text-[9px] text-blue-700 truncate block">staff@ags.edu</span>
-                    <span className="text-[9px] font-mono text-blue-800">PIN: 1234 (Upload)</span>
                   </button>
-                </div>
+                )}
               </div>
             </div>
           </div>
@@ -1003,6 +1528,7 @@ $$;`;
             {/* TAB NAVIGATION */}
             <div className="bg-white border-b border-slate-200 px-5 pt-2 flex items-center justify-between overflow-x-auto">
               <div className="flex space-x-1 sm:space-x-2">
+                {/* TAB 1: Upload (Visible to Admin, Teacher, Staff) */}
                 <button
                   onClick={() => setActiveAdminTab('upload')}
                   className={`px-3.5 py-2.5 text-xs font-bold border-b-2 flex items-center gap-2 transition-all whitespace-nowrap ${
@@ -1012,22 +1538,29 @@ $$;`;
                   }`}
                 >
                   <BookOpen className="w-4 h-4 text-amber-500" />
-                  <span>कोर्स कंटेंट अपलोड (3-चरण)</span>
+                  <span>
+                    {currentUser.role === 'teacher'
+                      ? 'मेरा अधिकृत कोर्स कंटेंट प्रबंधन'
+                      : 'कोर्स कंटेंट अपलोड (3-चरण)'}
+                  </span>
                 </button>
 
-                <button
-                  onClick={() => setActiveAdminTab('editorials')}
-                  className={`px-3.5 py-2.5 text-xs font-bold border-b-2 flex items-center gap-2 transition-all whitespace-nowrap ${
-                    activeAdminTab === 'editorials'
-                      ? 'border-[#0a2240] text-[#0a2240]'
-                      : 'border-transparent text-slate-500 hover:text-slate-800'
-                  }`}
-                >
-                  <Newspaper className="w-4 h-4 text-emerald-600" />
-                  <span>करेंट अफेयर्स व संपादकीय ({summaryMetrics.editorialsCount})</span>
-                </button>
+                {/* TAB 2: EDITORIALS (STRICTLY ADMIN ONLY) */}
+                {currentUser.role === 'admin' && (
+                  <button
+                    onClick={() => setActiveAdminTab('editorials')}
+                    className={`px-3.5 py-2.5 text-xs font-bold border-b-2 flex items-center gap-2 transition-all whitespace-nowrap ${
+                      activeAdminTab === 'editorials'
+                        ? 'border-[#0a2240] text-[#0a2240]'
+                        : 'border-transparent text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    <Newspaper className="w-4 h-4 text-emerald-600" />
+                    <span>करेंट अफेयर्स व संपादकीय ({summaryMetrics.editorialsCount})</span>
+                  </button>
+                )}
 
-                {/* TEACHER APPOINTMENT & COURSE ACCESS TAB: VISIBLE ONLY TO ADMIN */}
+                {/* TAB 3: TEACHERS & STAFF MANAGEMENT (STRICTLY ADMIN ONLY) */}
                 {currentUser.role === 'admin' && (
                   <button
                     onClick={() => setActiveAdminTab('teachers')}
@@ -1038,39 +1571,69 @@ $$;`;
                     }`}
                   >
                     <Users className="w-4 h-4 text-indigo-600" />
-                    <span>शिक्षक नियुक्ति व आईडी जनरेटर</span>
+                    <span>शिक्षक व स्टाफ नियुक्ति एवं कोर्स आवंटन</span>
                     <span className="px-1.5 py-0.2 rounded-full bg-indigo-100 text-indigo-700 text-[10px]">
                       {cmsStore.getTeachers().length} शिक्षक
                     </span>
                   </button>
                 )}
 
-                <button
-                  onClick={() => setActiveAdminTab('dashboard')}
-                  className={`px-3.5 py-2.5 text-xs font-bold border-b-2 flex items-center gap-2 transition-all whitespace-nowrap ${
-                    activeAdminTab === 'dashboard'
-                      ? 'border-[#0a2240] text-[#0a2240]'
-                      : 'border-transparent text-slate-500 hover:text-slate-800'
-                  }`}
-                >
-                  <Layers className="w-4 h-4 text-blue-600" />
-                  <span>कंटेंट ओवरव्यू टेबल</span>
-                  <span className="px-1.5 py-0.2 rounded-full bg-blue-100 text-blue-700 text-[10px]">
-                    {summaryMetrics.totalVideos}
-                  </span>
-                </button>
+                {/* TAB 4: CONTENT DASHBOARD OVERVIEW TABLE (STRICTLY ADMIN ONLY) */}
+                {currentUser.role === 'admin' && (
+                  <button
+                    onClick={() => setActiveAdminTab('dashboard')}
+                    className={`px-3.5 py-2.5 text-xs font-bold border-b-2 flex items-center gap-2 transition-all whitespace-nowrap ${
+                      activeAdminTab === 'dashboard'
+                        ? 'border-[#0a2240] text-[#0a2240]'
+                        : 'border-transparent text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    <Layers className="w-4 h-4 text-blue-600" />
+                    <span>कंटेंट ओवरव्यू टेबल</span>
+                    <span className="px-1.5 py-0.2 rounded-full bg-blue-100 text-blue-700 text-[10px]">
+                      {summaryMetrics.totalVideos}
+                    </span>
+                  </button>
+                )}
 
-                <button
-                  onClick={() => setActiveAdminTab('sql')}
-                  className={`px-3.5 py-2.5 text-xs font-bold border-b-2 flex items-center gap-2 transition-all whitespace-nowrap ${
-                    activeAdminTab === 'sql'
-                      ? 'border-[#0a2240] text-[#0a2240]'
-                      : 'border-transparent text-slate-500 hover:text-slate-800'
-                  }`}
-                >
-                  <Database className="w-4 h-4 text-purple-600" />
-                  <span>डेटाबेस स्कीमा (SQL)</span>
-                </button>
+                {/* TAB 5: DATABASE SCHEMA SQL (STRICTLY ADMIN ONLY) */}
+                {currentUser.role === 'admin' && (
+                  <button
+                    onClick={() => setActiveAdminTab('sql')}
+                    className={`px-3.5 py-2.5 text-xs font-bold border-b-2 flex items-center gap-2 transition-all whitespace-nowrap ${
+                      activeAdminTab === 'sql'
+                        ? 'border-[#0a2240] text-[#0a2240]'
+                        : 'border-transparent text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    <Database className="w-4 h-4 text-purple-600" />
+                    <span>डेटाबेस स्कीमा (SQL)</span>
+                  </button>
+                )}
+
+                {/* TAB 6: REVISION REQUESTS WORKFLOW (STAFF SUBMIT / ADMIN APPROVE) */}
+                {(currentUser.role === 'admin' || currentUser.role === 'staff') && (
+                  <button
+                    onClick={() => setActiveAdminTab('revisions')}
+                    className={`px-3.5 py-2.5 text-xs font-bold border-b-2 flex items-center gap-2 transition-all whitespace-nowrap ${
+                      activeAdminTab === 'revisions'
+                        ? 'border-[#0a2240] text-[#0a2240]'
+                        : 'border-transparent text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    <AlertTriangle className="w-4 h-4 text-amber-600" />
+                    <span>
+                      {currentUser.role === 'admin'
+                        ? 'स्टाफ सुधार अनुरोध समीक्षा'
+                        : 'गलतियों में सुधार अनुरोध'}
+                    </span>
+                    {revisionRequests.filter((r) => r.status === 'pending').length > 0 && (
+                      <span className="px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold animate-pulse">
+                        {revisionRequests.filter((r) => r.status === 'pending').length}
+                      </span>
+                    )}
+                  </button>
+                )}
               </div>
 
               {/* Refresh Button */}
@@ -1814,8 +2377,8 @@ $$;`;
                 </div>
               )}
 
-              {/* TAB 2: CONTENT OVERVIEW DASHBOARD TABLE */}
-              {activeAdminTab === 'dashboard' && (
+              {/* TAB 2: CONTENT OVERVIEW DASHBOARD TABLE (ADMIN ONLY) */}
+              {activeAdminTab === 'dashboard' && currentUser.role === 'admin' && (
                 <div className="space-y-4">
                   {/* Summary Metric Badges */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -2061,8 +2624,8 @@ $$;`;
                 </div>
               )}
 
-              {/* TAB: CURRENT AFFAIRS & EDITORIALS PUBLISHER */}
-              {activeAdminTab === 'editorials' && (
+              {/* TAB: CURRENT AFFAIRS & EDITORIALS PUBLISHER (ADMIN ONLY) */}
+              {activeAdminTab === 'editorials' && currentUser.role === 'admin' && (
                 <div className="max-w-4xl mx-auto space-y-6">
                   {/* Top Intro Card */}
                   <div className="bg-emerald-50/80 border border-emerald-200 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
@@ -2681,8 +3244,8 @@ $$;`;
                 </div>
               )}
 
-              {/* TAB 5: DATABASE SCHEMA & SQL CODE */}
-              {activeAdminTab === 'sql' && (
+              {/* TAB 5: DATABASE SCHEMA & SQL CODE (ADMIN ONLY) */}
+              {activeAdminTab === 'sql' && currentUser.role === 'admin' && (
                 <div className="space-y-4 max-w-4xl mx-auto">
                   <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                     <div>
@@ -2707,13 +3270,15 @@ $$;`;
 
                   <div className="bg-slate-900 rounded-xl p-4 text-slate-200 font-mono text-xs overflow-x-auto shadow-inner border border-slate-800 max-h-96">
                     <pre className="whitespace-pre">
-{`-- 1. USERS TABLE (Roles: admin, staff, teacher)
+{`-- 1. USERS TABLE (Roles: admin, teacher, staff, student)
 CREATE TABLE IF NOT EXISTS public.users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    display_id VARCHAR(50) UNIQUE,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
+    phone VARCHAR(50),
     password_hash VARCHAR(255) NOT NULL,
-    role VARCHAR(50) NOT NULL CHECK (role IN ('admin', 'staff', 'teacher')),
+    role VARCHAR(50) NOT NULL CHECK (role IN ('admin', 'teacher', 'staff', 'student')),
     subject_specialty VARCHAR(255),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -2728,7 +3293,7 @@ CREATE TABLE IF NOT EXISTS public.courses (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- 3. COURSE_TEACHERS JUNCTION TABLE (Multi-Instructor Access Mapping)
+-- 3. COURSE_TEACHERS JUNCTION TABLE (Multi-Instructor Access Isolation)
 CREATE TABLE IF NOT EXISTS public.course_teachers (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     course_id UUID NOT NULL REFERENCES public.courses(id) ON DELETE CASCADE,
@@ -2737,63 +3302,33 @@ CREATE TABLE IF NOT EXISTS public.course_teachers (
     UNIQUE(course_id, teacher_id)
 );
 
--- 4. SUBJECTS TABLE (FK to courses)
-CREATE TABLE IF NOT EXISTS public.subjects (
+-- 4. STAFF REVISION REQUESTS TABLE (Error Correction Workflow)
+CREATE TABLE IF NOT EXISTS public.revision_requests (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    course_id UUID NOT NULL REFERENCES public.courses(id) ON DELETE CASCADE,
-    title VARCHAR(255) NOT NULL,
-    order_index INT NOT NULL DEFAULT 0,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    staff_id UUID NOT NULL REFERENCES public.users(id),
+    staff_name VARCHAR(255) NOT NULL,
+    content_type VARCHAR(50) NOT NULL,
+    content_id VARCHAR(100) NOT NULL,
+    content_title VARCHAR(255) NOT NULL,
+    request_type VARCHAR(50) NOT NULL CHECK (request_type IN ('correction', 'deletion')),
+    issue_description TEXT NOT NULL,
+    proposed_correction TEXT,
+    status VARCHAR(50) NOT NULL DEFAULT 'pending',
+    admin_remarks TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    resolved_at TIMESTAMPTZ
 );
 
--- 5. VIDEOS TABLE (FK to subjects, uploaded_by -> users)
-CREATE TABLE IF NOT EXISTS public.videos (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    subject_id UUID NOT NULL REFERENCES public.subjects(id) ON DELETE CASCADE,
-    title VARCHAR(255) NOT NULL,
-    video_url TEXT NOT NULL,
-    duration VARCHAR(50) NOT NULL DEFAULT '45:00',
-    order_index INT NOT NULL DEFAULT 0,
-    uploaded_by UUID REFERENCES public.users(id) ON DELETE SET NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
--- 6. NOTES TABLE (FK to videos, uploaded_by -> users)
-CREATE TABLE IF NOT EXISTS public.notes (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    video_id UUID NOT NULL REFERENCES public.videos(id) ON DELETE CASCADE,
-    title VARCHAR(255) NOT NULL,
-    file_url TEXT NOT NULL,
-    file_size_mb NUMERIC(8, 2) NOT NULL DEFAULT 12.50,
-    uploaded_by UUID REFERENCES public.users(id) ON DELETE SET NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
--- 7. EDITORIALS TABLE (Editorial & Current Affairs CMS)
-CREATE TABLE IF NOT EXISTS public.editorials (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    type VARCHAR(50) NOT NULL CHECK (type IN ('editorial', 'current_affairs')),
-    category VARCHAR(100) NOT NULL,
-    title VARCHAR(500) NOT NULL,
-    slug VARCHAR(500) UNIQUE NOT NULL,
-    content TEXT NOT NULL,
-    pdf_url TEXT,
-    publish_date DATE NOT NULL DEFAULT CURRENT_DATE,
-    status VARCHAR(50) NOT NULL CHECK (status IN ('draft', 'published')) DEFAULT 'published',
-    author_id UUID REFERENCES public.users(id) ON DELETE SET NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
--- 8. ROW LEVEL SECURITY (RLS) POLICIES FOR TEACHERS
+-- 5. ROW LEVEL SECURITY (RLS) POLICIES FOR TEACHERS
 ALTER TABLE public.courses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.course_teachers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.subjects ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.videos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notes ENABLE ROW LEVEL SECURITY;
 
--- Policy: Teachers can only view & upload inside assigned courses
-CREATE POLICY "Teachers can view assigned courses"
-    ON public.courses FOR SELECT
+-- Strict Isolation Policy: Teachers can ONLY view & modify courses allotted to them
+CREATE POLICY "Teacher isolated access"
+    ON public.courses FOR ALL
     USING (
         auth.jwt() ->> 'role' = 'admin' OR
         EXISTS (
@@ -2804,6 +3339,264 @@ CREATE POLICY "Teachers can view assigned courses"
     );`}
                     </pre>
                   </div>
+                </div>
+              )}
+
+              {/* TAB 6: STAFF REVISION & CORRECTION REQUESTS */}
+              {activeAdminTab === 'revisions' && (currentUser.role === 'admin' || currentUser.role === 'staff') && (
+                <div className="space-y-6 max-w-4xl mx-auto animate-in fade-in">
+                  {currentUser.role === 'staff' ? (
+                    /* STAFF VIEW: SUBMIT CORRECTION REQUEST */
+                    <div className="space-y-6">
+                      <div className="bg-amber-50 border border-amber-300 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
+                        <div>
+                          <h3 className="text-sm font-bold text-amber-950 flex items-center gap-2">
+                            <AlertTriangle className="w-5 h-5 text-amber-700" />
+                            <span>गलतियों में सुधार व संशोधन अनुरोध (Submit Revision/Correction Request)</span>
+                          </h3>
+                          <p className="text-xs text-amber-900 mt-1 leading-relaxed">
+                            टेक्निकल स्टाफ के लिए विशेष सुविधा: यदि किसी पूर्व अपलोड वीडियो, क्लास नोट्स या ई-बुक में कोई त्रुटि (जैसे ऑडियो समस्या, गलत लिंक या मिसिंग पेज) हो, 
+                            तो यहाँ से सीधे मुख्य एडमिन (Shantilal Meena) को सुधार अनुरोध भेजें। एडमिन द्वारा स्वीकृति मिलते ही संशोधन लागू हो जाएगा।
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Revision Request Form */}
+                      <form onSubmit={handleStaffSubmitRevision} className="bg-white rounded-2xl border border-slate-200 p-5 sm:p-7 shadow-sm space-y-4">
+                        <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider border-b pb-2 flex items-center gap-1.5">
+                          <Send className="w-4 h-4 text-amber-600" />
+                          <span>नया सुधार या डिलीट अनुरोध फॉर्म</span>
+                        </h4>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                              अनुरोध का प्रकार (Request Type) *
+                            </label>
+                            <select
+                              value={revRequestType}
+                              onChange={(e) => setRevRequestType(e.target.value as any)}
+                              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold"
+                            >
+                              <option value="correction">✏️ त्रुटि सुधार / लिंक संशोधन (Correction/Update)</option>
+                              <option value="deletion">🗑️ सामग्री हटाने का अनुरोध (Deletion Request)</option>
+                            </select>
+                          </div>
+
+                          <div>
+                            <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                              संबंधित व्याख्यान / सामग्री चुनें *
+                            </label>
+                            <select
+                              value={revSelectedContent}
+                              onChange={(e) => setRevSelectedContent(e.target.value)}
+                              className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-white text-slate-900"
+                            >
+                              <option value="">-- सामग्री चुनें --</option>
+                              {dashboardRows.map((row) => (
+                                <option key={row.videoId} value={row.videoId}>
+                                  [{row.courseTitle.split(' (')[0]}] {row.videoTitle}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                            गलती / समस्या का विस्तृत विवरण (Issue Description) *
+                          </label>
+                          <textarea
+                            rows={3}
+                            value={revIssueDescription}
+                            onChange={(e) => setRevIssueDescription(e.target.value)}
+                            required
+                            placeholder="उदा. वीडियो के 18वें मिनट में ध्वनि बंद हो जाती है, कृपया इसे नए री-अपलोड लिंक से बदलें अथवा नोट्स पीडीएफ में पेज 14-16 अस्पष्ट हैं।"
+                            className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-300 text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                            प्रस्तावित सुधार / नया वीडियो लिंक या टाइटल (Proposed Correction / URL)
+                          </label>
+                          <input
+                            type="text"
+                            value={revProposedCorrection}
+                            onChange={(e) => setRevProposedCorrection(e.target.value)}
+                            placeholder="उदा. https://www.youtube.com/watch?v=... या नया शीर्षक"
+                            className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-300 text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-amber-500"
+                          />
+                        </div>
+
+                        <div className="pt-2 flex justify-end">
+                          <button
+                            type="submit"
+                            className="px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl shadow-md transition-all flex items-center gap-2"
+                          >
+                            <Send className="w-4 h-4" />
+                            <span>एडमिन को सुधार अनुरोध भेजें</span>
+                          </button>
+                        </div>
+                      </form>
+
+                      {/* Staff's Submitted Requests History */}
+                      <div className="space-y-3">
+                        <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                          मेरे द्वारा प्रेषित सुधार अनुरोध ({revisionRequests.length})
+                        </h4>
+                        {revisionRequests.length === 0 ? (
+                          <div className="p-5 bg-white rounded-xl border border-slate-200 text-center text-xs text-slate-400">
+                            आपने अभी तक कोई सुधार अनुरोध नहीं भेजा है।
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            {revisionRequests.map((req) => (
+                              <div
+                                key={req.id}
+                                className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs space-y-2"
+                              >
+                                <div className="flex items-center justify-between gap-2">
+                                  <div className="flex items-center gap-2">
+                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                      req.request_type === 'deletion'
+                                        ? 'bg-red-100 text-red-800 border border-red-200'
+                                        : 'bg-amber-100 text-amber-800 border border-amber-200'
+                                    }`}>
+                                      {req.request_type === 'deletion' ? '🗑️ हटाने का अनुरोध' : '✏️ संशोधन अनुरोध'}
+                                    </span>
+                                    <h5 className="text-xs font-bold text-slate-900">{req.content_title}</h5>
+                                  </div>
+                                  <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
+                                    req.status === 'approved'
+                                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                                      : req.status === 'rejected'
+                                      ? 'bg-rose-100 text-rose-800 border border-rose-300'
+                                      : 'bg-amber-100 text-amber-800 border border-amber-300 animate-pulse'
+                                  }`}>
+                                    {req.status === 'approved' ? '✓ स्वीकृत' : req.status === 'rejected' ? '✕ अस्वीकृत' : '⏳ पेंडिंग'}
+                                  </span>
+                                </div>
+
+                                <p className="text-xs text-slate-700 bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                                  <strong>विवरण:</strong> {req.issue_description}
+                                </p>
+
+                                {req.proposed_correction && (
+                                  <p className="text-xs text-indigo-700 font-mono">
+                                    <strong>सुझाव:</strong> {req.proposed_correction}
+                                  </p>
+                                )}
+
+                                {req.admin_remarks && (
+                                  <p className="text-xs text-emerald-800 bg-emerald-50 p-2 rounded-lg border border-emerald-200">
+                                    <strong>एडमिन टिप्पणी:</strong> {req.admin_remarks}
+                                  </p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    /* ADMIN VIEW: REVIEW AND APPROVE / REJECT REQUESTS */
+                    <div className="space-y-5">
+                      <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
+                        <div>
+                          <h3 className="text-sm font-bold text-indigo-950 flex items-center gap-2">
+                            <ShieldCheck className="w-5 h-5 text-indigo-700" />
+                            <span>टेक्निकल स्टाफ सुधार अनुरोध समीक्षा केंद्र (Staff Revision Approval Queue)</span>
+                          </h3>
+                          <p className="text-xs text-indigo-800 mt-1 leading-relaxed">
+                            कंटेंट ऑपरेटरों द्वारा भेजी गई त्रुटि रिपोर्टों और संशोधन अनुरोधों की समीक्षा करें। 
+                            'स्वीकृत' करने पर प्रस्तावित लिंक या डिलीशन स्वतः लागू हो जाएगा।
+                          </p>
+                        </div>
+                        <div className="px-3 py-1.5 bg-white border border-indigo-300 rounded-xl text-xs font-bold text-indigo-900 shrink-0">
+                          पेंडिंग अनुरोध: {revisionRequests.filter(r => r.status === 'pending').length}
+                        </div>
+                      </div>
+
+                      {revisionRequests.length === 0 ? (
+                        <div className="p-8 bg-white rounded-2xl border border-slate-200 text-center text-xs text-slate-400">
+                          कोई सुधार अनुरोध प्राप्त नहीं हुआ है। सभी सामग्रियां सत्यापित हैं।
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {revisionRequests.map((req) => (
+                            <div
+                              key={req.id}
+                              className={`bg-white rounded-2xl border p-5 shadow-sm space-y-3 transition-all ${
+                                req.status === 'pending'
+                                  ? 'border-amber-300 ring-1 ring-amber-100'
+                                  : 'border-slate-200 opacity-80'
+                              }`}
+                            >
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                    req.request_type === 'deletion'
+                                      ? 'bg-red-100 text-red-800 border border-red-200'
+                                      : 'bg-amber-100 text-amber-800 border border-amber-200'
+                                  }`}>
+                                    {req.request_type === 'deletion' ? '🗑️ सामग्री डिलीट अनुरोध' : '✏️ सुधार/संशोधन अनुरोध'}
+                                  </span>
+                                  <h4 className="text-sm font-bold text-slate-900">{req.content_title}</h4>
+                                  <span className="text-[10px] text-slate-500 font-semibold">({req.course_title})</span>
+                                </div>
+
+                                <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full shrink-0 ${
+                                  req.status === 'approved'
+                                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                                    : req.status === 'rejected'
+                                    ? 'bg-rose-100 text-rose-800 border border-rose-300'
+                                    : 'bg-amber-100 text-amber-800 border border-amber-300 animate-pulse'
+                                }`}>
+                                  {req.status === 'approved' ? '✓ स्वीकृत' : req.status === 'rejected' ? '✕ अस्वीकृत' : '⏳ समीक्षा हेतु लंबित'}
+                                </span>
+                              </div>
+
+                              <div className="text-xs space-y-1.5">
+                                <p className="text-slate-700 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                  <strong className="text-slate-900">स्टाफ द्वारा दर्ज समस्या:</strong> {req.issue_description}
+                                </p>
+                                {req.proposed_correction && (
+                                  <p className="text-indigo-800 font-mono text-[11px] bg-indigo-50/50 p-2 rounded-lg border border-indigo-100">
+                                    <strong>प्रस्तावित सुधार / लिंक:</strong> {req.proposed_correction}
+                                  </p>
+                                )}
+                                <div className="text-[10px] text-slate-400 flex items-center justify-between pt-1">
+                                  <span>प्रेषक: <strong>{req.staff_name}</strong></span>
+                                  <span>तारीख: {new Date(req.created_at).toLocaleDateString('hi-IN')}</span>
+                                </div>
+                              </div>
+
+                              {req.status === 'pending' && (
+                                <div className="pt-2 border-t border-slate-100 flex items-center justify-end gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleAdminResolveRevision(req.id, 'rejected', 'एडमिन द्वारा अस्वीकृत')}
+                                    className="px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold rounded-xl transition-all"
+                                  >
+                                    ✕ अस्वीकृत करें
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleAdminResolveRevision(req.id, 'approved', 'स्वीकृत एवं सुधार लागू किया गया')}
+                                    className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all flex items-center gap-1.5 active:scale-95"
+                                  >
+                                    <Check className="w-4 h-4" />
+                                    <span>✓ स्वीकृत करें एवं लागू करें</span>
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>

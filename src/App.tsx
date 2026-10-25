@@ -29,11 +29,13 @@ import {
 import { TabType, Course, MockTest, NoteItem, UserProfile, ExamCategory, SheetClassRecord, CurrentAffairsArticle } from './types';
 import { fetchGoogleSheetClasses, FALLBACK_SHEET_CLASSES } from './services/sheetService';
 import { cmsStore } from './services/cmsStore';
+import { DbUser } from './types/cms';
 import { Smartphone, Monitor, CheckCircle2 } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabType>('home');
   const [language, setLanguage] = useState<'hi' | 'en'>('hi');
+  const [currentUser, setCurrentUser] = useState<DbUser | null>(() => cmsStore.getCurrentUser());
   const [user, setUser] = useState<UserProfile>(INITIAL_USER);
   const [downloadedNoteIds, setDownloadedNoteIds] = useState<string[]>([
     'note-history-handwritten',
@@ -242,6 +244,26 @@ export default function App() {
     loadSheetData(true);
   }, []);
 
+  // Synchronize active user session across app
+  useEffect(() => {
+    const active = cmsStore.getCurrentUser();
+    setCurrentUser(active);
+    if (active) {
+      setUser((prev) => ({
+        ...prev,
+        name: active.name,
+        studentId: active.display_id || prev.studentId,
+        email: active.email,
+        phone: active.phone || prev.phone,
+        targetExam: active.target_exam || prev.targetExam,
+        enrolledCourseIds:
+          active.enrolled_courses && active.enrolled_courses.length > 0
+            ? active.enrolled_courses
+            : prev.enrolledCourseIds,
+      }));
+    }
+  }, [cmsTrigger]);
+
   // Handlers
   const handleToggleLanguage = () => {
     setLanguage((prev) => (prev === 'hi' ? 'en' : 'hi'));
@@ -305,11 +327,27 @@ export default function App() {
   };
 
   const handleEnrollSuccess = (courseId: string) => {
-    if (!user.enrolledCourseIds.includes(courseId)) {
-      setUser((prev) => ({
+    setUser((prev) => {
+      const updated = prev.enrolledCourseIds.includes(courseId)
+        ? prev.enrolledCourseIds
+        : [...prev.enrolledCourseIds, courseId];
+      return {
         ...prev,
-        enrolledCourseIds: [...prev.enrolledCourseIds, courseId],
-      }));
+        enrolledCourseIds: updated,
+      };
+    });
+
+    const active = cmsStore.getCurrentUser();
+    if (active && active.role === 'student') {
+      const existing = active.enrolled_courses || [];
+      if (!existing.includes(courseId)) {
+        const updatedStudent: DbUser = {
+          ...active,
+          enrolled_courses: [...existing, courseId],
+        };
+        cmsStore.setCurrentUser(updatedStudent);
+        setCurrentUser(updatedStudent);
+      }
     }
     showToast('बैच में प्रवेश सफल! My Batches में जोड़ा गया।');
   };
@@ -370,6 +408,7 @@ export default function App() {
           currentLanguage={language}
           onToggleLanguage={handleToggleLanguage}
           targetExam={user.targetExam}
+          currentUser={currentUser}
           onOpenAdmin={() => setIsAdminModalOpen(true)}
         />
 
@@ -444,11 +483,18 @@ export default function App() {
           {activeTab === 'profile' && (
             <ProfileView
               user={user}
+              currentUser={currentUser}
               language={language}
               onToggleLanguage={handleToggleLanguage}
               onOpenCourse={(course) => setSyllabusModal({ isOpen: true, course })}
               onResumeLecture={handleResumeLecture}
               onOpenAdmin={() => setIsAdminModalOpen(true)}
+              onLogout={() => {
+                cmsStore.logout();
+                setCurrentUser(null);
+                setCmsTrigger((v) => v + 1);
+                showToast('सफलतापूर्वक लॉगआउट किया गया।');
+              }}
             />
           )}
 

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Bell, Search, Globe, X, Sparkles, AlertCircle, Shield } from 'lucide-react';
+import { Bell, Search, Globe, X, Sparkles, AlertCircle, Shield, User, GraduationCap } from 'lucide-react';
 import { NOTICES } from '../data/mockData';
+import { DbUser } from '../types/cms';
 
 interface HeaderProps {
   currentLanguage: 'hi' | 'en';
@@ -8,6 +9,7 @@ interface HeaderProps {
   onOpenSearch?: () => void;
   onOpenAdmin?: () => void;
   targetExam?: string;
+  currentUser?: DbUser | null;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -15,6 +17,7 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleLanguage,
   targetExam = 'विषयवार स्पेशल बैच',
   onOpenAdmin,
+  currentUser,
 }) => {
   const [showNotificationDrawer, setShowNotificationDrawer] = useState(false);
   const [unreadCount, setUnreadCount] = useState(3);
@@ -60,18 +63,54 @@ export const Header: React.FC<HeaderProps> = ({
               <span>{currentLanguage === 'hi' ? 'हिंदी' : 'ENG'}</span>
             </button>
 
-            {/* Top-Right Corner: Login / Admin Portal Button */}
+            {/* Top-Right Corner: Role Badge / Login Button */}
             {onOpenAdmin && (
               <button
                 onClick={onOpenAdmin}
-                className="min-h-[36px] px-3 py-1 text-xs font-bold rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 active:scale-95 transition-all flex items-center gap-1.5 shadow-sm border border-amber-300"
-                title="व्यवस्थापक / स्टाफ लॉगिन एवं CMS"
-                aria-label="Admin and Staff Login"
+                className="min-h-[36px] px-2.5 sm:px-3 py-1 text-xs font-bold rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 active:scale-95 transition-all flex items-center gap-1.5 shadow-sm border border-amber-300"
+                title="रोल बदलें अथवा पोर्टल लॉगिन करें"
+                aria-label="Role Switcher and Login"
               >
-                <Shield className="w-3.5 h-3.5 text-slate-950 fill-slate-950" />
-                <span className="whitespace-nowrap font-extrabold tracking-tight">
-                  {currentLanguage === 'hi' ? 'लॉगिन / एडमिन' : 'Login / Admin'}
-                </span>
+                {currentUser?.role === 'admin' && (
+                  <>
+                    <span className="text-xs">👑</span>
+                    <span className="whitespace-nowrap font-extrabold tracking-tight">
+                      एडमिन ({currentUser.name.split(' ')[0]})
+                    </span>
+                  </>
+                )}
+                {currentUser?.role === 'teacher' && (
+                  <>
+                    <span className="text-xs">👨‍🏫</span>
+                    <span className="whitespace-nowrap font-extrabold tracking-tight">
+                      {currentUser.name.split(' ')[0]} सर
+                    </span>
+                  </>
+                )}
+                {currentUser?.role === 'staff' && (
+                  <>
+                    <span className="text-xs">🛠️</span>
+                    <span className="whitespace-nowrap font-extrabold tracking-tight">
+                      स्टाफ ({currentUser.name.split(' ')[0]})
+                    </span>
+                  </>
+                )}
+                {currentUser?.role === 'student' && (
+                  <>
+                    <span className="text-xs">🎓</span>
+                    <span className="whitespace-nowrap font-extrabold tracking-tight">
+                      छात्र: {currentUser.name.split(' ')[0]}
+                    </span>
+                  </>
+                )}
+                {!currentUser && (
+                  <>
+                    <Shield className="w-3.5 h-3.5 text-slate-950 fill-slate-950" />
+                    <span className="whitespace-nowrap font-extrabold tracking-tight">
+                      {currentLanguage === 'hi' ? 'लॉगिन / रोल्स' : 'Login / Roles'}
+                    </span>
+                  </>
+                )}
               </button>
             )}
 

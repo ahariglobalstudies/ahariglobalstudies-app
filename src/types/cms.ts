@@ -1,14 +1,38 @@
-export type UserRole = 'admin' | 'staff' | 'teacher';
+export type UserRole = 'admin' | 'teacher' | 'student' | 'staff';
 
 export interface DbUser {
   id: string;
   display_id?: string;
   name: string;
   email: string;
+  phone?: string;
   password_hash?: string;
   role: UserRole;
   subject_specialty?: string;
+  target_exam?: string;
+  enrolled_courses?: string[];
   created_at: string;
+}
+
+export type RevisionType = 'correction' | 'deletion';
+export type RevisionStatus = 'pending' | 'approved' | 'rejected';
+
+export interface DbRevisionRequest {
+  id: string;
+  staff_id: string;
+  staff_name: string;
+  content_type: 'video' | 'note' | 'printable_note';
+  content_id: string;
+  content_title: string;
+  course_id?: string;
+  course_title: string;
+  request_type: RevisionType;
+  issue_description: string;
+  proposed_correction?: string;
+  status: RevisionStatus;
+  admin_remarks?: string;
+  created_at: string;
+  resolved_at?: string;
 }
 
 export interface DbCourse {

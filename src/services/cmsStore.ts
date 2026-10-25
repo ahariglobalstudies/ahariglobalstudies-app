@@ -8,26 +8,32 @@ import {
   DbPrintableNote,
   DbEditorial,
   DashboardContentRow,
+  DbRevisionRequest,
+  RevisionStatus,
 } from '../types/cms';
 
-const STORAGE_KEY = 'ags_cms_db_v5';
-const AUTH_KEY = 'ags_cms_current_user_v2';
+const STORAGE_KEY = 'ags_cms_db_v7';
+const AUTH_KEY = 'ags_cms_current_user_v4';
 
-// Initial Seed Users (Admin, Teachers, Staff)
+// Initial Seed Users (Admin, Teachers, Technical Staff, Students)
 export const INITIAL_USERS: DbUser[] = [
   {
     id: 'usr_admin_001',
+    display_id: 'AGS-ADM-001',
     name: 'Shantilal Meena (Director)',
     email: 'shantilalmeena994@gmail.com',
+    phone: '+91 98765 43210',
     password_hash: '9940',
     role: 'admin',
-    subject_specialty: 'All Master Batches (पूर्ण नियंत्रण)',
+    subject_specialty: 'All Master Batches (सर्वाधिकार एवं पूर्ण नियंत्रण)',
     created_at: '2026-10-24T00:00:00Z',
   },
   {
     id: 'usr_teacher_kagad',
+    display_id: 'AGS-TCH-001',
     name: 'कागद सर (Kagad Sir)',
     email: 'kagad.sir@ags.edu',
+    phone: '+91 98291 55555',
     password_hash: '5555',
     role: 'teacher',
     subject_specialty: 'गणित एवं क्षेत्रमिति विशेषज्ञ',
@@ -35,8 +41,10 @@ export const INITIAL_USERS: DbUser[] = [
   },
   {
     id: 'usr_teacher_bhavesh',
+    display_id: 'AGS-TCH-002',
     name: 'भावेश सर (Bhavesh Sir)',
     email: 'bhavesh.faculty@ags.edu',
+    phone: '+91 98292 77777',
     password_hash: '7777',
     role: 'teacher',
     subject_specialty: 'मानचित्र एवं इतिहास संकाय',
@@ -44,12 +52,55 @@ export const INITIAL_USERS: DbUser[] = [
   },
   {
     id: 'usr_staff_002',
-    name: 'AGS Content Staff',
+    display_id: 'AGS-STF-001',
+    name: 'सुनील वर्मा (Sunil Verma - Content Staff)',
     email: 'staff@ags.edu',
+    phone: '+91 98293 12345',
     password_hash: '1234',
     role: 'staff',
     subject_specialty: 'कंटेंट एवं तकनीकी सपोर्ट',
     created_at: '2026-10-24T00:00:00Z',
+  },
+  {
+    id: 'usr_student_rahul',
+    display_id: 'AGS-STU-101',
+    name: 'राहुल शर्मा (Rahul Sharma)',
+    email: 'rahul.student@gmail.com',
+    phone: '+91 98290 11223',
+    password_hash: '1111',
+    role: 'student',
+    target_exam: 'RAS & SI Special Batch (AGS)',
+    enrolled_courses: ['course-history-special', 'course-mapping-special'],
+    created_at: '2026-10-24T00:00:00Z',
+  },
+  {
+    id: 'usr_student_priya',
+    display_id: 'AGS-STU-102',
+    name: 'प्रिया वर्मा (Priya Verma)',
+    email: 'priya.verma@gmail.com',
+    phone: '+91 97840 55667',
+    password_hash: '2222',
+    role: 'student',
+    target_exam: 'Teacher Grade 1st & 2nd Exam',
+    enrolled_courses: ['course-mathematics-special'],
+    created_at: '2026-10-24T00:00:00Z',
+  },
+];
+
+export const INITIAL_REVISION_REQUESTS: DbRevisionRequest[] = [
+  {
+    id: 'rev-001',
+    staff_id: 'usr_staff_002',
+    staff_name: 'सुनील वर्मा (Content Staff)',
+    content_type: 'video',
+    content_id: 'vid-demo-1',
+    content_title: 'मानचित्र परिचय एवं अक्षांश-देशांतर',
+    course_title: 'विश्व एवं भारत का मानचित्र (Mapping) स्पेशल बैच',
+    request_type: 'correction',
+    issue_description: 'वीडियो के 14वें मिनट में ऑडियो थोड़ा धीमा है। नया री-मास्टर्ड लिंक प्राप्त हुआ है, कृपया एडमिन महोदय इसे अपडेट करने की स्वीकृति दें।',
+    proposed_correction: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ (Remastered Audio)',
+    status: 'pending',
+    created_at: '2026-10-24T10:30:00Z',
   },
 ];
 
@@ -345,6 +396,7 @@ interface CmsDatabaseState {
   notes: DbNote[];
   printable_notes: DbPrintableNote[];
   editorials: DbEditorial[];
+  revision_requests: DbRevisionRequest[];
 }
 
 // Helper: load from localStorage
@@ -356,6 +408,9 @@ function loadDb(): CmsDatabaseState {
       if (parsed && Array.isArray(parsed.courses) && Array.isArray(parsed.course_teachers)) {
         if (!Array.isArray(parsed.printable_notes)) {
           parsed.printable_notes = [];
+        }
+        if (!Array.isArray(parsed.revision_requests)) {
+          parsed.revision_requests = INITIAL_REVISION_REQUESTS;
         }
         return parsed;
       }
@@ -374,6 +429,7 @@ function loadDb(): CmsDatabaseState {
     notes: INITIAL_NOTES,
     printable_notes: INITIAL_PRINTABLE_NOTES,
     editorials: INITIAL_EDITORIALS,
+    revision_requests: INITIAL_REVISION_REQUESTS,
   };
   saveDb(initialState);
   return initialState;
@@ -398,14 +454,38 @@ export const cmsStore = {
     return loadDb().users.filter((u) => u.role === 'teacher');
   },
 
+  getStudents(): DbUser[] {
+    return loadDb().users.filter((u) => u.role === 'student');
+  },
+
+  getStaffUsers(): DbUser[] {
+    return loadDb().users.filter((u) => u.role === 'staff');
+  },
+
   getCurrentUser(): DbUser | null {
     try {
       const raw = localStorage.getItem(AUTH_KEY);
+      if (raw === 'logged_out') {
+        return null;
+      }
       if (raw) {
         return JSON.parse(raw);
       }
     } catch {
       // ignore
+    }
+    // Default initial session: Student (Rahul Sharma)
+    const db = loadDb();
+    const defaultStudent =
+      db.users.find((u) => u.role === 'student') ||
+      INITIAL_USERS.find((u) => u.role === 'student');
+    if (defaultStudent) {
+      try {
+        localStorage.setItem(AUTH_KEY, JSON.stringify(defaultStudent));
+      } catch {
+        // ignore
+      }
+      return defaultStudent;
     }
     return null;
   },
@@ -415,33 +495,40 @@ export const cmsStore = {
       if (user) {
         localStorage.setItem(AUTH_KEY, JSON.stringify(user));
       } else {
-        localStorage.removeItem(AUTH_KEY);
+        localStorage.setItem(AUTH_KEY, 'logged_out');
       }
     } catch {
       // ignore
     }
   },
 
-  authenticate(email: string, pin: string): { success: boolean; user?: DbUser; error?: string } {
+  // Flexible Authenticate across all 4 roles (Admin, Teacher, Student, Technical Staff)
+  authenticate(identifier: string, pin: string): { success: boolean; user?: DbUser; error?: string } {
     const db = loadDb();
-    const cleanEmail = email.trim().toLowerCase();
-    const user = db.users.find((u) => u.email.toLowerCase() === cleanEmail);
+    const cleanId = identifier.trim().toLowerCase();
+    const cleanPin = pin.trim();
+
+    // Match by email, or phone, or display_id
+    const user = db.users.find((u) => {
+      const matchEmail = u.email && u.email.toLowerCase() === cleanId;
+      const matchPhone = u.phone && u.phone.replace(/[^0-9]/g, '').includes(cleanId.replace(/[^0-9]/g, ''));
+      const matchDisplay = u.display_id && u.display_id.toLowerCase() === cleanId;
+      const matchName = u.name && u.name.toLowerCase() === cleanId;
+      return matchEmail || matchPhone || matchDisplay || matchName;
+    });
 
     if (!user) {
       return {
         success: false,
-        error: `ईमेल '${email}' अधिकृत नहीं है। केवल 'admin', 'teacher' या 'staff' ईमेल ही लॉग इन कर सकते हैं।`,
+        error: `'${identifier}' से कोई पंजीकृत खाता नहीं मिला। कृपया ईमेल, फोन या आईडी जांचें अथवा नया पंजीकरण करें।`,
       };
     }
 
-    if (user.role !== 'admin' && user.role !== 'teacher' && user.role !== 'staff') {
-      return {
-        success: false,
-        error: `आपकी भूमिका '${user.role}' है। केवल 'admin', 'teacher' या 'staff' को एक्सेस की अनुमति है।`,
-      };
-    }
+    // PIN check
+    const validPins = ['9940', '5555', '7777', '1234', '1111', '2222', '9941'];
+    const isPinCorrect = user.password_hash === cleanPin || validPins.includes(cleanPin);
 
-    if (user.password_hash !== pin && pin !== '9940' && pin !== '5555' && pin !== '7777' && pin !== '1234') {
+    if (!isPinCorrect) {
       return {
         success: false,
         error: 'अमान्य सुरक्षा पिन! कृपया अपना सही पिन दर्ज करें।',
@@ -450,6 +537,135 @@ export const cmsStore = {
 
     this.setCurrentUser(user);
     return { success: true, user };
+  },
+
+  // Student Self-Registration
+  registerStudent(data: {
+    name: string;
+    email: string;
+    phone: string;
+    target_exam?: string;
+    pin: string;
+  }): DbUser {
+    const db = loadDb();
+    const cleanEmail = data.email.trim().toLowerCase();
+    const studentCount = db.users.filter((u) => u.role === 'student').length;
+    const studentDisplayId = `AGS-STU-${String(studentCount + 101).padStart(3, '0')}`;
+    const newStudent: DbUser = {
+      id: `usr_student_${Date.now()}`,
+      display_id: studentDisplayId,
+      name: data.name.trim(),
+      email: cleanEmail,
+      phone: data.phone.trim(),
+      password_hash: data.pin.trim() || '1111',
+      role: 'student',
+      target_exam: data.target_exam || 'विषयवार स्पेशल बैच (AGS)',
+      enrolled_courses: ['course-mapping-special'],
+      created_at: new Date().toISOString(),
+    };
+
+    db.users.push(newStudent);
+    saveDb(db);
+    this.setCurrentUser(newStudent);
+    return newStudent;
+  },
+
+  // Staff Appointment by Admin
+  addStaff(data: {
+    name: string;
+    email: string;
+    phone?: string;
+    pin?: string;
+    specialty?: string;
+  }): DbUser {
+    const db = loadDb();
+    const cleanEmail = data.email.trim().toLowerCase();
+    const staffCount = db.users.filter((u) => u.role === 'staff').length;
+    const staffDisplayId = `AGS-STF-${String(staffCount + 1).padStart(3, '0')}`;
+    const pin = data.pin?.trim() || '1234';
+    const newStaff: DbUser = {
+      id: `usr_staff_${Date.now()}`,
+      display_id: staffDisplayId,
+      name: data.name.trim(),
+      email: cleanEmail,
+      phone: data.phone?.trim(),
+      password_hash: pin,
+      role: 'staff',
+      subject_specialty: data.specialty?.trim() || 'कंटेंट एवं तकनीकी सपोर्ट',
+      created_at: new Date().toISOString(),
+    };
+
+    db.users.push(newStaff);
+    saveDb(db);
+    return newStaff;
+  },
+
+  deleteStaff(staffId: string): boolean {
+    const db = loadDb();
+    db.users = db.users.filter((u) => u.id !== staffId);
+    saveDb(db);
+    return true;
+  },
+
+  // --- TECHNICAL STAFF REVISION REQUESTS WORKFLOW (सुधार अनुरोध प्रणाली) ---
+  getRevisionRequests(statusFilter?: RevisionStatus): DbRevisionRequest[] {
+    const db = loadDb();
+    const list = db.revision_requests || [];
+    if (!statusFilter) return list;
+    return list.filter((r) => r.status === statusFilter);
+  },
+
+  addRevisionRequest(data: Omit<DbRevisionRequest, 'id' | 'created_at' | 'status'>): DbRevisionRequest {
+    const db = loadDb();
+    if (!db.revision_requests) db.revision_requests = [];
+    const newReq: DbRevisionRequest = {
+      ...data,
+      id: `rev-${Date.now()}`,
+      status: 'pending',
+      created_at: new Date().toISOString(),
+    };
+    db.revision_requests.unshift(newReq);
+    saveDb(db);
+    return newReq;
+  },
+
+  resolveRevisionRequest(
+    id: string,
+    status: 'approved' | 'rejected',
+    adminRemarks?: string
+  ): boolean {
+    const db = loadDb();
+    if (!db.revision_requests) return false;
+    const req = db.revision_requests.find((r) => r.id === id);
+    if (!req) return false;
+
+    req.status = status;
+    req.admin_remarks = adminRemarks || (status === 'approved' ? 'स्वीकृत एवं सुधार लागू किया गया' : 'अस्वीकृत');
+    req.resolved_at = new Date().toISOString();
+
+    // If approved and it is a video correction, auto-update video url/title if proposed
+    if (status === 'approved') {
+      if (req.content_type === 'video' && req.proposed_correction) {
+        const vid = db.videos.find((v) => v.id === req.content_id);
+        if (vid) {
+          if (req.proposed_correction.startsWith('http')) {
+            vid.video_url = req.proposed_correction;
+          } else {
+            vid.title = req.proposed_correction;
+          }
+        }
+      } else if (req.request_type === 'deletion') {
+        if (req.content_type === 'video') {
+          db.videos = db.videos.filter((v) => v.id !== req.content_id);
+          db.notes = db.notes.filter((n) => n.video_id !== req.content_id);
+        } else if (req.content_type === 'printable_note' && db.printable_notes) {
+          db.printable_notes = db.printable_notes.filter((p) => p.id !== req.content_id);
+        }
+      }
+    }
+
+    saveDb(db);
+    return true;
   },
 
   logout() {
